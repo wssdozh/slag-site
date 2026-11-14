@@ -277,6 +277,15 @@ p {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--fg-secondary);
+  transition:
+    border-color var(--dur-micro) var(--ease-standard),
+    color var(--dur-micro) var(--ease-standard);
+}
+
+/* The badge is also the shortest path to the release notes, so it behaves like a link. */
+.hero__badge:hover {
+  border-color: var(--border-hover);
+  color: var(--fg);
 }
 
 .dot {

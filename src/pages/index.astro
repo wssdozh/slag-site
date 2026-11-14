@@ -168,14 +168,6 @@ const faq = [
         <span class="carousel__count">
           <span data-carousel-count>01</span> / {String(shots.length).padStart(2, '0')}
         </span>
-        <div class="carousel__nav">
-          <button class="iconbtn" type="button" data-carousel-prev aria-label="Предыдущий скриншот">
-            <span aria-hidden="true">←</span>
-          </button>
-          <button class="iconbtn" type="button" data-carousel-next aria-label="Следующий скриншот">
-            <span aria-hidden="true">→</span>
-          </button>
-        </div>
       </div>
 
       <div
@@ -197,6 +189,7 @@ const faq = [
               class="shot__open"
               type="button"
               data-shot
+              data-index={index}
               data-src={shot.src}
               data-caption={shot.caption}
               data-width={shot.width}
@@ -210,6 +203,7 @@ const faq = [
                 height={shot.height}
                 loading={index === 0 ? 'eager' : 'lazy'}
                 decoding="async"
+                draggable="false"
               />
               <span class="shot__zoom" aria-hidden="true">открыть</span>
             </button>
@@ -430,101 +424,200 @@ const faq = [
       });
     }
 
-    const openers = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-shot]'));
     const pad = (value: number) => String(value).padStart(2, '0');
 
-    // Carousel: a scroll container with snap points does the moving, so this only keeps the
-    // counter honest and moves the rail one slide per arrow. Native scrolling already carries the
-    // momentum, and a phone swipes it without any pointer code.
     const track = document.querySelector<HTMLElement>('[data-carousel-track]');
     const count = document.querySelector<HTMLElement>('[data-carousel-count]');
-    const slides = track ? Array.from(track.querySelectorAll<HTMLElement>('.shot')) : [];
-
-    if (track && count && slides.length > 1) {
-      const prev = document.querySelector<HTMLButtonElement>('[data-carousel-prev]');
-      const next = document.querySelector<HTMLButtonElement>('[data-carousel-next]');
-
-      const stride = () => {
-        const first = slides[0];
-        const second = slides[1];
-        return first && second ? second.offsetLeft - first.offsetLeft : track.clientWidth;
-      };
-
-      const position = () => {
-        const step = stride();
-        if (step <= 0) return 0;
-        // The last slide can never reach the left edge: the rail runs out of scroll before it.
-        // At the end of the track the last slide is the one on screen, so say so.
-        const maxScroll = track.scrollWidth - track.clientWidth;
-        if (maxScroll > 0 && track.scrollLeft >= maxScroll - 2) return slides.length - 1;
-        return Math.round(track.scrollLeft / step);
-      };
-
-      const paint = () => {
-        const index = Math.min(position(), slides.length - 1);
-        count.textContent = pad(index + 1);
-        // A dead arrow is worse than no arrow: at the ends they say so.
-        if (prev) prev.disabled = index === 0;
-        if (next) next.disabled = index === slides.length - 1;
-      };
-
-      const goTo = (next: number) => {
-        const clamped = Math.max(0, Math.min(next, slides.length - 1));
-        const step = stride();
-        const maxScroll = track.scrollWidth - track.clientWidth;
-        const left = clamped === slides.length - 1 ? maxScroll : clamped * step;
-        track.scrollTo({ left, behavior: 'smooth' });
-      };
-
-      const { scrollWidth, clientWidth } = track;
-
-      prev?.addEventListener('click', () => goTo(position() - 1));
-      next?.addEventListener('click', () => goTo(position() + 1));
-
-      if (scrollWidth <= clientWidth + 4) {
-        // Nothing to scroll: the rail fits, and dead arrows are worse than no arrows.
-        prev?.remove();
-        next?.remove();
-      }
-
-      let frame = 0;
-      track.addEventListener(
-        'scroll',
-        () => {
-          if (frame) return;
-          frame = requestAnimationFrame(() => {
-            frame = 0;
-            paint();
-          });
-        },
-        { passive: true },
-      );
-
-      track.addEventListener('keydown', (event) => {
-        if (event.key === 'ArrowRight') {
-          event.preventDefault();
-          goTo(position() + 1);
-        } else if (event.key === 'ArrowLeft') {
-          event.preventDefault();
-          goTo(position() - 1);
-        }
-      });
-
-      paint();
-    }
-
-    // Lightbox: a native <dialog> does the modal work (focus trap, Esc, backdrop, top layer), so
-    // this only swaps the picture and keeps the index in range.
     const box = document.querySelector<HTMLDialogElement>('[data-lightbox]');
     const stage = box?.querySelector<HTMLImageElement>('[data-stage]') ?? null;
     const caption = box?.querySelector<HTMLElement>('[data-caption]') ?? null;
     const counter = box?.querySelector<HTMLElement>('[data-counter]') ?? null;
+    const originals = track ? Array.from(track.querySelectorAll<HTMLButtonElement>('[data-shot]')) : [];
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    if (box && stage && caption && counter && openers.length > 0) {
-      let index = 0;
+    // Carousel without arrows: the rail is dragged, swiped, or moves on its own when nobody is
+    // touching it. Wrapping past the last slide needs a second copy of the slides in the DOM —
+    // when the first clone settles exactly where the first slide was, the rail jumps back one
+    // cycle without animation, so the pictures appear to loop forever.
+    if (track && count && originals.length > 1) {
+      const total = originals.length;
+      const originSlides = Array.from(track.querySelectorAll<HTMLElement>('.shot'));
+
+      for (const slide of originSlides) {
+        const clone = slide.cloneNode(true) as HTMLElement;
+        clone.setAttribute('aria-hidden', 'true');
+        for (const button of clone.querySelectorAll<HTMLElement>('button')) button.tabIndex = -1;
+        track.append(clone);
+      }
+
+      const slides = Array.from(track.querySelectorAll<HTMLElement>('.shot'));
+      const leftOf = (slide: HTMLElement) => slide.offsetLeft - track.offsetLeft;
+
+      // Slides differ in width (the phone one is narrow), so there is no single stride: the
+      // current slide is whichever one starts closest to the left edge.
+      const nearest = () => {
+        let best = 0;
+        let bestDelta = Number.POSITIVE_INFINITY;
+        slides.forEach((slide, index) => {
+          const delta = Math.abs(leftOf(slide) - track.scrollLeft);
+          if (delta < bestDelta) {
+            bestDelta = delta;
+            best = index;
+          }
+        });
+        return best;
+      };
 
       const paint = () => {
-        const opener = openers[index];
+        count.textContent = pad((nearest() % total) + 1);
+      };
+
+      const jumpTo = (left: number) => {
+        const previous = track.style.scrollBehavior;
+        track.style.scrollBehavior = 'auto';
+        track.scrollLeft = left;
+        track.style.scrollBehavior = previous;
+      };
+
+      const goTo = (physical: number) => {
+        const slide = slides[Math.max(0, Math.min(physical, slides.length - 1))];
+        if (!slide) return;
+        track.scrollTo({ left: leftOf(slide), behavior: 'smooth' });
+      };
+
+      const settle = () => {
+        const cycle = (slides[total] ? leftOf(slides[total]!) : 0) - (slides[0] ? leftOf(slides[0]!) : 0);
+        if (cycle > 0 && track.scrollLeft >= cycle - 2) {
+          jumpTo(track.scrollLeft - cycle);
+          paint();
+        }
+      };
+
+      let pressX = 0;
+      let startLeft = 0;
+      let idleTimer = 0;
+
+      track.addEventListener(
+        'scroll',
+        () => {
+          paint();
+          window.clearTimeout(idleTimer);
+          idleTimer = window.setTimeout(() => {
+            if (!dragging) settle();
+          }, 180);
+        },
+        { passive: true },
+      );
+
+      // Mouse drag. Touch needs no code: the browser scrolls the rail natively, with momentum.
+      // Capture starts only after the pointer actually moves: capturing on pointerdown retargets
+      // the following click to the rail, and a click on a picture would stop opening the lightbox.
+      let pressing = false;
+      let dragging = false;
+      let pointerId = -1;
+
+      track.addEventListener('pointerdown', (event) => {
+        if (event.pointerType === 'touch') return;
+        pressing = true;
+        pressX = event.clientX;
+        startLeft = track.scrollLeft;
+        pointerId = event.pointerId;
+      });
+
+      track.addEventListener('pointermove', (event) => {
+        if (!pressing || event.pointerId !== pointerId) return;
+        const dx = event.clientX - pressX;
+        if (!dragging) {
+          if (Math.abs(dx) < 6) return;
+          dragging = true;
+          track.setPointerCapture(event.pointerId);
+          track.style.scrollSnapType = 'none';
+          track.style.scrollBehavior = 'auto';
+          track.classList.add('is-dragging');
+          stop();
+        }
+        track.scrollLeft = startLeft - dx;
+      });
+
+      const endDrag = (event?: PointerEvent) => {
+        pressing = false;
+        if (!dragging) return;
+        dragging = false;
+        track.style.scrollSnapType = '';
+        track.style.scrollBehavior = '';
+        track.classList.remove('is-dragging');
+        if (event && track.hasPointerCapture(event.pointerId)) {
+          track.releasePointerCapture(event.pointerId);
+        }
+        goTo(nearest());
+        start();
+      };
+
+      track.addEventListener('pointerup', endDrag);
+      track.addEventListener('pointercancel', endDrag);
+
+      track.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          goTo(nearest() + 1);
+        } else if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          goTo(nearest() - 1);
+        }
+      });
+
+      // Autoplay stops for a pointer, for focus inside the rail, for a hidden tab and for the
+      // lightbox; reduced motion turns it off for good.
+      let timer = 0;
+      let paused = false;
+
+      function stop() {
+        if (timer) {
+          window.clearInterval(timer);
+          timer = 0;
+        }
+      }
+
+      function start() {
+        if (calm.matches || timer) return;
+        timer = window.setInterval(() => {
+          if (paused || dragging) return;
+          if (document.querySelector('[data-lightbox]')?.hasAttribute('open')) return;
+          goTo(nearest() + 1);
+        }, 4200);
+      }
+
+      track.addEventListener('pointerenter', () => {
+        paused = true;
+      });
+      track.addEventListener('pointerleave', () => {
+        paused = false;
+      });
+      track.addEventListener('focusin', () => {
+        paused = true;
+      });
+      track.addEventListener('focusout', () => {
+        paused = false;
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stop();
+        else start();
+      });
+
+      paint();
+      start();
+    }
+
+    // Lightbox: a native <dialog> does the modal work (focus trap, Esc, backdrop, top layer), so
+    // this only swaps the picture and keeps the index in range. A press that moved is a drag of
+    // the rail, not a click on the picture.
+    if (box && stage && caption && counter && originals.length > 0) {
+      let index = 0;
+      let pressX: number | null = null;
+      let pressY: number | null = null;
+
+      const paint = () => {
+        const opener = originals[index];
         if (!opener) return;
         const src = opener.dataset.src ?? '';
         const text = opener.dataset.caption ?? '';
@@ -533,36 +626,33 @@ const faq = [
         stage.width = Number(opener.dataset.width ?? 0);
         stage.height = Number(opener.dataset.height ?? 0);
         caption.textContent = text;
-        counter.textContent = `${pad(index + 1)} / ${pad(openers.length)}`;
+        counter.textContent = `${pad(index + 1)} / ${pad(originals.length)}`;
       };
 
       const step = (delta: number) => {
-        index = (index + delta + openers.length) % openers.length;
+        index = (index + delta + originals.length) % originals.length;
         paint();
       };
-
-      // A press that moved is a drag of the carousel, not a click on the picture.
-      let pressX: number | null = null;
-      let pressY: number | null = null;
 
       track?.addEventListener('pointerdown', (event) => {
         pressX = event.clientX;
         pressY = event.clientY;
       });
 
-      for (const [position, opener] of openers.entries()) {
-        opener.addEventListener('click', (event) => {
-          const dragged =
-            event.detail > 0 &&
-            pressX !== null &&
-            pressY !== null &&
-            Math.abs(event.clientX - pressX) + Math.abs(event.clientY - pressY) > 10;
-          if (dragged) return;
-          index = position;
-          paint();
-          box.showModal();
-        });
-      }
+      // Delegated, so the cloned slides open the same picture as the originals they copy.
+      track?.addEventListener('click', (event) => {
+        const opener = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-shot]') : null;
+        if (!opener) return;
+        const dragged =
+          event.detail > 0 &&
+          pressX !== null &&
+          pressY !== null &&
+          Math.abs(event.clientX - pressX) + Math.abs(event.clientY - pressY) > 10;
+        if (dragged) return;
+        index = Number(opener.dataset.index ?? 0);
+        paint();
+        box.showModal();
+      });
 
       box.querySelector('[data-prev]')?.addEventListener('click', () => step(-1));
       box.querySelector('[data-next]')?.addEventListener('click', () => step(1));
@@ -583,14 +673,14 @@ const faq = [
         if (event.target === box) box.close();
       });
 
-      let startX: number | null = null;
+      let swipeFrom: number | null = null;
       box.addEventListener('pointerdown', (event) => {
-        startX = event.clientX;
+        swipeFrom = event.clientX;
       });
       box.addEventListener('pointerup', (event) => {
-        if (startX === null) return;
-        const delta = event.clientX - startX;
-        startX = null;
+        if (swipeFrom === null) return;
+        const delta = event.clientX - swipeFrom;
+        swipeFrom = null;
         if (Math.abs(delta) > 45) step(delta < 0 ? 1 : -1);
       });
     }

@@ -43,7 +43,7 @@ body {
   background: var(--canvas);
   color: var(--fg);
   font-family: var(--font);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
@@ -147,22 +147,12 @@ p {
   letter-spacing: -0.01em;
 }
 
+/* The PNG already carries its own rounded plate; a border, a fill and 2px of padding here made
+   a second one, which reads as a frame around a frame. */
 .brand img {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  padding: 2px;
-}
-
-.brand__version {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--fg-muted);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 1px 5px;
 }
 
 .site-nav {
@@ -271,8 +261,11 @@ p {
 }
 
 .hero h1 {
-  font-size: clamp(30px, 6vw, 52px);
-  max-width: 760px;
+  /* Display leading: both reference sites set their headline at ~1.0 line-height, which is what
+     makes a two-line claim read as one object. 1.05 leaves room for Cyrillic descenders. */
+  font-size: clamp(32px, 6.4vw, 60px);
+  line-height: 1.05;
+  max-width: 780px;
   margin: 0 auto;
 }
 
@@ -281,10 +274,11 @@ p {
 }
 
 .hero__lead {
-  max-width: 560px;
-  margin: 18px auto 0;
+  max-width: 600px;
+  margin: 20px auto 0;
   color: var(--fg-secondary);
-  font-size: 15px;
+  font-size: clamp(15px, 1.5vw, 17px);
+  line-height: 1.55;
 }
 
 .hero__actions {
@@ -330,14 +324,16 @@ p {
 
 .section h2 {
   margin-top: 8px;
-  font-size: clamp(22px, 3.2vw, 30px);
+  font-size: clamp(24px, 3.4vw, 34px);
+  line-height: 1.1;
 }
 
 .section__lead {
-  margin-top: 10px;
+  margin-top: 12px;
   max-width: 620px;
   color: var(--fg-secondary);
-  font-size: 14px;
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 .grid {
@@ -410,47 +406,58 @@ p {
 }
 
 .carousel__track {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: min(680px, 76%);
-  gap: 14px;
+  display: flex;
   align-items: start;
+  gap: 14px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
+  cursor: grab;
   /* Room for the focus ring, which would otherwise be clipped by the scroll box. */
   padding: 3px;
   margin: -3px;
+}
+
+.carousel__track.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  scroll-behavior: auto;
 }
 
 .carousel__track::-webkit-scrollbar {
   display: none;
 }
 
+.shot {
+  flex: 0 0 auto;
+  width: min(680px, 76%);
+}
+
+/* The phone is the one portrait shot: it gets a narrow slot instead of half a metre of empty
+   canvas beside a device. */
+.shot--phone {
+  width: min(300px, 42%);
+}
+
 @media (max-width: 719px) {
-  .carousel__track {
-    grid-auto-columns: 87%;
+  .shot {
+    width: 87%;
+  }
+  .shot--phone {
+    width: 62%;
   }
 }
 
+/* No card, no frame: the screenshot is the object. One hairline outline at 6% white keeps a
+   dark picture from bleeding into the page, which a border was doing too loudly. */
 .shot {
   display: flex;
   flex-direction: column;
   margin: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--canvas);
-  overflow: hidden;
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  transition: border-color 140ms var(--ease-standard);
-}
-
-.shot:hover,
-.shot:focus-within {
-  border-color: var(--border-hover);
 }
 
 .shot__open {
@@ -464,24 +471,28 @@ p {
   flex: 1 1 auto;
 }
 
-/* `contain`, so a 1280×800 shot sits edge to edge in a 16/10 frame and the phone is a phone
-   instead of a cropped slice of one. */
+/* `contain`, so a 1280×800 shot keeps its proportions in the shared 16/10 slot and the phone
+   stays a phone instead of a cropped slice of one. */
 .shot__open img {
   width: 100%;
   aspect-ratio: 16 / 10;
   object-fit: contain;
+  border-radius: 10px;
+  outline: 1px solid rgba(255, 255, 255, 0.06);
+  outline-offset: -1px;
+  /* The rail is dragged with the pointer; a native image drag would fight it. */
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .shot--phone .shot__open {
-  /* Same frame as a landscape shot, so the rail has one height and nothing letterboxes. */
+  /* Same slot as a landscape shot: one rail height, nothing letterboxes. */
   aspect-ratio: 16 / 10;
-  background: radial-gradient(120% 90% at 50% 0%, rgba(59, 130, 246, 0.1), transparent 65%),
-    var(--canvas-subtle);
 }
 
 .shot--phone img {
-  /* Absolute again: a percentage height inside an aspect-ratio box is not resolved by every
-     engine, and the phone ends up as tall as its own screenshot. */
+  /* Absolute: a percentage height inside an aspect-ratio box is not resolved by every engine,
+     and the phone ends up as tall as its own screenshot. */
   position: absolute;
   top: 50%;
   left: 50%;
@@ -491,9 +502,8 @@ p {
   max-width: calc(100% - 32px);
   max-height: calc(100% - 32px);
   aspect-ratio: auto;
-  border-radius: 10px;
-  border: 1px solid var(--border-strong);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+  outline: 0;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
 }
 
 /* The hint rides on the picture: a permanent "click me" line under every caption would
@@ -529,9 +539,7 @@ p {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  padding: 11px 14px;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
+  padding: 12px 2px 0;
   font-family: var(--mono);
   font-size: 11px;
   color: var(--fg-muted);

@@ -1,0 +1,277 @@
+---
+import Base from '../layouts/Base.astro';
+import latest from '../data/latest.json';
+import plansData from '../data/plans.json';
+
+const version = latest?.version ?? '';
+const downloads: Record<string, string> = latest?.downloads ?? {};
+const plans: Array<{
+  id: string;
+  label: string;
+  priceRub: number;
+  devices: number;
+  cacheMb: number;
+  summary: string;
+  features: string[];
+}> = plansData?.plans ?? [];
+const money = (rub: number) => (rub > 0 ? `${rub} ₽ / мес` : '0 ₽ навсегда');
+const gb = (mb: number) => (mb >= 1024 ? `${Math.round(mb / 1024)} ГБ` : `${mb} МБ`);
+
+const features = [
+  {
+    title: 'Markdown на диске',
+    body: 'Каждая запись — .md с YAML frontmatter. Папка, корзина и вложения — обычные файлы, которые видно в проводнике.',
+  },
+  {
+    title: 'Поток как в мессенджере',
+    body: 'Одно поле ввода, Enter отправляет. Заметка, задача или статья — выбирается в композере, а не в отдельной форме.',
+  },
+  {
+    title: 'Поиск по всему хранилищу',
+    body: 'Orama BM25 с опечатками ищит по заголовкам, тексту, тегам и папкам. Открывается на Ctrl+K.',
+  },
+  {
+    title: 'Аудио и вложения рядом',
+    body: 'Войсы, картинки и файлы живут в .attachments/ и открываются из карточки — без облака посередине.',
+  },
+  {
+    title: 'ИИ-разбор входящих',
+    body: 'Входящие разбираются по папкам с их описаниями. Своим ключом Gemini или через подписку — на выбор.',
+  },
+  {
+    title: 'MCP для своих агентов',
+    body: 'Встроенный MCP-сервер отдаёт заметки, задачи и папки Claude Desktop, Cursor и другим клиентам по stdio.',
+  },
+];
+
+const shots = [
+  { src: '/shots/editor.png', caption: 'редактор: задача, теги, панель папки' },
+  { src: '/shots/search.png', caption: 'поиск по хранилищу' },
+  { src: '/shots/triage.png', caption: 'разбор входящих' },
+  { src: '/shots/folder.png', caption: 'папка: описание для ИИ и медиа' },
+  { src: '/shots/mobile.png', caption: 'телефон: задачи' },
+];
+
+const faq = [
+  {
+    q: 'Куда уходят мои заметки?',
+    a: 'На диск. Если включить синхронизацию, между устройствами ходят только зашифрованные пакеты изменений: сервер не хранит историю и удаляет пакет сразу после доставки.',
+  },
+  {
+    q: 'Что будет, если сервер выключится?',
+    a: 'Приложение продолжит работать: заметки читаются и пишутся локально. Пропадёт только синхронизация между устройствами, и то до момента, пока сервер не вернётся.',
+  },
+  {
+    q: 'Нужен ли аккаунт с почтой и паролем?',
+    a: 'Нет. Устройства сопрягаются парой по короткому коду, аккаунт восстанавливается сид-фразой. Почта нужна только для связи с поддержкой, если сам её укажешь.',
+  },
+  {
+    q: 'Откроется ли это в Obsidian?',
+    a: 'Да, это и есть цель формата: .md с frontmatter, вложения в .attachments/, удалённое в .trash/. Экспорт в markdown есть в настройках.',
+  },
+];
+---
+
+<Base
+  title={`SLAG ${version} — локальные заметки в markdown`}
+  description="SLAG — заметки и задачи в открытом markdown на вашем диске. Поток как в мессенджере, поиск по всему хранилищу, шифрованная синхронизация без аккаунта."
+>
+  <section class="wrap hero">
+    <span class="hero__badge">
+      <span class="dot"></span>
+      <span>релиз {version} · Windows 10/11, Android, Linux</span>
+    </span>
+
+    <h1>
+      Заметки со скоростью чата.<br />
+      <span>Файлы остаются вашими.</span>
+    </h1>
+
+    <p class="hero__lead">
+      Одно поле, Enter — мысль записана. Задача, статья или войс лежат рядом, а на диске это
+      обычные markdown-файлы, которые открывает Obsidian.
+    </p>
+
+    <div class="hero__actions">
+      <a class="btn btn--primary" href={downloads.windows ?? '/releases'} data-download="windows">
+        Скачать для Windows
+      </a>
+      <a class="btn btn--ghost" href="/releases">Все платформы и версии</a>
+    </div>
+
+    <p class="hero__note">портативная сборка · работает офлайн · без установки Node.js</p>
+
+    <div class="hero__shot">
+      <img src="/shots/editor.png" alt="Экран SLAG: редактор, теги, панель папки" width="1280" height="720" />
+    </div>
+  </section>
+
+  <section class="wrap section" id="features">
+    <span class="section__label">что внутри</span>
+    <h2>Инструмент, а не платформа</h2>
+    <p class="section__lead">
+      Никаких воркспейсов, шаблонов и онбординга на десять экранов. Открыл, записал, закрыл.
+    </p>
+
+    <div class="grid grid--3">
+      {features.map((feature) => (
+        <article class="card">
+          <h3><span class="card__icon">—</span>{feature.title}</h3>
+          <p>{feature.body}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="wrap section" id="screens">
+    <span class="section__label">как выглядит</span>
+    <h2>Тёмно, плотно, без декораций</h2>
+    <p class="section__lead">Скриншоты снимаются с рабочей сборки, а не рисуются в макете.</p>
+
+    <div class="shots">
+      {shots.map((shot) => (
+        <figure>
+          <img src={shot.src} alt={shot.caption} loading="lazy" />
+          <figcaption>{shot.caption}</figcaption>
+        </figure>
+      ))}
+    </div>
+  </section>
+
+  <section class="wrap section" id="data">
+    <span class="section__label">где мои данные</span>
+    <h2>Локально — по умолчанию, а не по подписке</h2>
+
+    <div class="grid grid--3">
+      <article class="card">
+        <h3><span class="card__icon">1</span> Хранилище — папка</h3>
+        <p>
+          Ты выбираешь папку на диске. Приложение не прячет её в свою базу: потерялся компьютер —
+          открыл папку на другом, всё на месте.
+        </p>
+      </article>
+      <article class="card">
+        <h3><span class="card__icon">2</span> Релей не читает</h3>
+        <p>
+          Пакеты изменений шифруются на устройстве. Сервер видит размер и адресата, а содержимое
+          удаляет сразу после подтверждения доставки.
+        </p>
+      </article>
+      <article class="card">
+        <h3><span class="card__icon">3</span> Свой релей</h3>
+        <p>
+          Синхронизация не обязана быть нашей: релей открыт, ставится на домашний сервер и работает
+          с тем же приложением.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="wrap section" id="download">
+    <span class="section__label">скачать</span>
+    <h2>Сборка {version}</h2>
+    <p class="section__lead">
+      Windows и Android обновляются изнутри приложения. Linux ставится пакетным менеджером, поэтому
+      там кнопка ведёт на страницу релиза.
+    </p>
+
+    <div class="grid grid--3">
+      <article class="card">
+        <h3><span class="card__icon">win</span> Windows 10/11</h3>
+        <p>.exe, x64. Портативная сборка и установщик в одном релизе.</p>
+        <p style="margin-top:14px">
+          <a class="btn btn--primary btn--small" href={downloads.windows ?? '/releases'} data-download="windows">
+            Скачать .exe
+          </a>
+        </p>
+      </article>
+      <article class="card">
+        <h3><span class="card__icon">apk</span> Android</h3>
+        <p>Установка из apk, обновления — тоже apk, поверх старой версии.</p>
+        <p style="margin-top:14px">
+          <a class="btn btn--ghost btn--small" href={downloads.android ?? '/releases'} data-download="android">
+            Скачать apk
+          </a>
+        </p>
+      </article>
+      <article class="card">
+        <h3><span class="card__icon">nix</span> Linux</h3>
+        <p>Бинарник принадлежит пакетному менеджеру, приложение его не подменяет.</p>
+        <p style="margin-top:14px">
+          <a class="btn btn--ghost btn--small" href="/releases">Страница релиза</a>
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="wrap section" id="pricing">
+    <span class="section__label">тарифы</span>
+    <h2>Платишь за релей, а не за доступ к заметкам</h2>
+    <p class="section__lead">
+      Само приложение бесплатное и работает без сети. Подписка оплачивает синхронизацию: устройства,
+      место под недоставленные вложения и ИИ-разбор.
+    </p>
+
+    <div class="plans">
+      {plans.map((plan) => (
+        <article class={`plan${plan.id === 'smile' ? ' plan--featured' : ''}`}>
+          <div class="plan__head">
+            <span class="plan__name">{plan.label}</span>
+            <span class="plan__price">{money(plan.priceRub)}</span>
+          </div>
+          <p class="plan__desc">{plan.summary}</p>
+          <p class="plan__limits">{plan.devices} устройств · кеш {gb(plan.cacheMb)}</p>
+          <ul>
+            {plan.features.map((feature: string) => <li>{feature}</li>)}
+          </ul>
+          {plan.priceRub > 0 ? (
+            <button class="btn btn--ghost btn--small" type="button" data-pay={plan.label}>
+              Оплатить
+            </button>
+          ) : (
+            <a class="btn btn--primary btn--small" href={downloads.windows ?? '/releases'} data-download="windows">
+              Скачать бесплатно
+            </a>
+          )}
+          {plan.priceRub > 0 && (
+            <p class="notice" data-pay-note hidden>
+              Оплата ещё не подключена: эквайринг на согласовании. Напишите на{' '}
+              <a href="mailto:support@slag.app">support@slag.app</a> — включим тариф вручную и зачтём
+              оплату, когда он заработает.
+            </p>
+          )}
+        </article>
+      ))}
+    </div>
+
+    <div class="notice">
+      Свой релей — бесплатно и без лимитов: синхронизация открыта, ставится на домашний сервер или
+      VPS. Тарифы выше нужны только тем, кому не хочется администрировать.
+    </div>
+  </section>
+
+  <section class="wrap section" id="faq">
+    <span class="section__label">вопросы</span>
+    <h2>Коротко о главном</h2>
+
+    <div class="faq">
+      {faq.map((item) => (
+        <details>
+          <summary>{item.q}</summary>
+          <p>{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <script>
+    // The checkout is not wired to an acquirer yet, and the bank wants a real, clickable path with a
+    // plain message instead of a dead button. One listener, no framework.
+    for (const button of document.querySelectorAll('[data-pay]')) {
+      button.addEventListener('click', () => {
+        const note = button.parentElement?.querySelector('[data-pay-note]');
+        if (note instanceof HTMLElement) note.hidden = !note.hidden;
+      });
+    }
+  </script>
+</Base>

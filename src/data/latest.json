@@ -1,0 +1,10 @@
+{
+  "version": "0.2.4",
+  "pubDate": "2026-11-14T12:41:38Z",
+  "notes": "релизы переехали в сам репозиторий: проект открытый, отдельный slag-releases больше не нужен",
+  "downloads": {
+    "windows": "https://github.com/wssdozh/slag-v2/releases/download/v0.2.4/SLAG_0.2.4_x64-setup.exe",
+    "android": "https://github.com/wssdozh/slag-v2/releases/download/v0.2.4/SLAG-0.2.4-universal.apk",
+    "linux": "https://github.com/wssdozh/slag-v2/releases/latest"
+  }
+}

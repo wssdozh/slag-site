@@ -1,0 +1,20 @@
+{
+  "name": "slag-site",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Public site for SLAG: landing, docs, releases, legal pages and the feedback board",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/fetch-data.mjs && astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "shots": "node scripts/sync-shots.mjs",
+    "data": "node scripts/fetch-data.mjs"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "astro": "^7.4.12",
+    "typescript": "^5.9.3"
+  }
+}

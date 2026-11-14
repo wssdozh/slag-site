@@ -1,0 +1,55 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Поддержка SLAG"
+  description="Куда писать про баг, идею или проблему с оплатой."
+>
+  <section class="wrap" style="padding-top:56px;max-width:760px">
+    <span class="section__label">поддержка</span>
+    <h1 style="font-size:clamp(24px,4vw,34px);margin-top:8px">Связаться с живым человеком</h1>
+    <p class="section__lead">
+      Проект небольшой, поэтому поддержка — это почта и телеграм, а не форма с тикетом на неделю.
+      Отвечаю сам, обычно в течение дня.
+    </p>
+
+    <div class="grid grid--2" style="margin-top:28px">
+      <article class="card">
+        <h3><span class="card__icon">mail</span> Почта</h3>
+        <p><a href="mailto:support@slag.app">support@slag.app</a></p>
+        <p style="margin-top:8px">
+          Для оплаты, возвратов и всего, что требует переписки. Приложи версию из «Настройки → О программе».
+        </p>
+      </article>
+      <article class="card">
+        <h3><span class="card__icon">tg</span> Телеграм</h3>
+        <p><a href="https://t.me/slag_notes" rel="noreferrer">@slag_notes</a></p>
+        <p style="margin-top:8px">
+          Быстрые вопросы: как настроить релей, не открывается хранилище, странно ведёт себя поиск.
+        </p>
+      </article>
+    </div>
+
+    <h2 style="margin-top:40px;font-size:18px">Что приложить к сообщению</h2>
+    <ul style="margin-top:10px;padding-left:20px;color:var(--fg-secondary);font-size:14px">
+      <li>версия приложения и платформа (Windows, Android, Linux);</li>
+      <li>что делал перед тем, как сломалось, и что ожидал увидеть;</li>
+      <li>
+        лог: «Настройки → Логи и диагностика», кнопка «Скопировать». Секреты в нём вырезаны.
+      </li>
+    </ul>
+
+    <h2 style="margin-top:40px;font-size:18px">Публичный список багов</h2>
+    <p style="margin-top:10px;color:var(--fg-secondary);font-size:14px">
+      Открытая доска, где видно, что уже починили и что в очереди, появится здесь же. Пока список
+      живёт в
+      <a href="https://github.com/wssdozh/slag-v2/issues" rel="noreferrer">GitHub issues</a>: он
+      публичный, и там же видно статусы.
+    </p>
+    <p class="notice">
+      Всё, что касается денег, персональных данных и подозрений на мошенничество, пишите на почту, а
+      не в публичные обсуждения: такие обращения я не выкладываю никуда и отвечаю лично.
+    </p>
+  </section>
+</Base>

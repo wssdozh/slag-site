@@ -1,0 +1,45 @@
+---
+import Base from '../layouts/Base.astro';
+import releases from '../data/releases.json';
+
+const list = Array.isArray(releases) ? releases : [];
+const fmt = (iso: string) => {
+  if (!iso) return '';
+  const [year, month, day] = iso.split('-');
+  return day ? `${day}.${month}.${year}` : iso;
+};
+---
+
+<Base
+  title="Релизы SLAG"
+  description="Что менялось в SLAG по версиям: заметки к релизам, даты, ссылки на скачивание."
+>
+  <section class="wrap" style="padding-top:56px">
+    <span class="section__label">релизы</span>
+    <h1 style="font-size:clamp(24px,4vw,34px);margin-top:8px">Что менялось</h1>
+    <p class="section__lead">
+      Те же заметки, что приходят в приложение при обновлении. Установленные копии обновляются
+      сами — вручную скачивать нужно только первую.
+    </p>
+
+    <div class="releases">
+      {list.map((release) => (
+        <article class="release">
+          <div class="release__head">
+            <a class="release__version" href={release.url} rel="noreferrer">{release.version}</a>
+            <span class="release__date">{fmt(release.date)}</span>
+          </div>
+          {release.notes && <p class="release__notes">{release.notes}</p>}
+        </article>
+      ))}
+    </div>
+
+    {list.length === 0 && <p class="notice">Список релизов не подтянулся. Все версии есть в <a href="https://github.com/wssdozh/slag-v2/releases" rel="noreferrer">GitHub</a>.</p>}
+
+    <p class="notice">
+      Полная история с файлами и подписями — в <a href="https://github.com/wssdozh/slag-v2/releases" rel="noreferrer">GitHub releases</a>.
+      Откатиться на старую версию нельзя: обновление принимает только версию выше, поэтому
+      исправление выпускается новой сборкой.
+    </p>
+  </section>
+</Base>

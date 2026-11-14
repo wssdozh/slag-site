@@ -1,0 +1,42 @@
+---
+import Base from './Base.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+const path = Astro.url.pathname;
+
+const pages = [
+  { href: '/docs', label: 'Обзор' },
+  { href: '/docs/install', label: 'Установка' },
+  { href: '/docs/vault', label: 'Хранилище и файлы' },
+  { href: '/docs/sync', label: 'Синхронизация' },
+  { href: '/docs/mcp', label: 'MCP-сервер' },
+];
+---
+
+<Base title={`${title} — документация SLAG`} description={description}>
+  <div class="wrap doc-layout">
+    <aside class="doc-side">
+      <p class="doc-side__title">документация</p>
+      <nav>
+        {pages.map((page) => (
+          <a href={page.href} aria-current={path === page.href ? 'page' : undefined}>{page.label}</a>
+        ))}
+      </nav>
+      <p class="doc-side__title" style="margin-top:24px">ещё</p>
+      <nav>
+        <a href="/releases">Релизы</a>
+        <a href="/support">Поддержка</a>
+        <a href="https://github.com/wssdozh/slag-v2" rel="noreferrer">Исходный код</a>
+      </nav>
+    </aside>
+
+    <div class="prose">
+      <slot />
+    </div>
+  </div>
+</Base>

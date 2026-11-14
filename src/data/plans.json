@@ -1,0 +1,33 @@
+{
+  "updated": "2026-11-14",
+  "source": "https://github.com/wssdozh/slag-relay — PLANS in settings.py",
+  "plans": [
+    {
+      "id": "free",
+      "label": "Free",
+      "priceRub": 0,
+      "devices": 2,
+      "cacheMb": 1024,
+      "summary": "Текст без вложений и без подписки.",
+      "features": ["Только текст", "Шифрование на клиенте"]
+    },
+    {
+      "id": "smile",
+      "label": "Smile",
+      "priceRub": 190,
+      "devices": 5,
+      "cacheMb": 10240,
+      "summary": "Вложения, аудио и ИИ-разбор входящих.",
+      "features": ["Картинки, аудио и файлы", "ИИ-триаж входящих", "Окно кеша 7 дней"]
+    },
+    {
+      "id": "angry",
+      "label": "Angry",
+      "priceRub": 490,
+      "devices": 15,
+      "cacheMb": 51200,
+      "summary": "Для больших баз и десятка устройств.",
+      "features": ["Приоритетный канал релея", "Окно кеша 30 дней"]
+    }
+  ]
+}

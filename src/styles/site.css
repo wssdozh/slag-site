@@ -544,8 +544,12 @@ p {
    go. `scroll-behavior` stays `auto` — the drift writes scrollLeft every frame, and a smooth
    behaviour on the container would turn each of those writes into its own little animation. */
 .carousel__track {
+  /* One height for every slide. It follows the landscape shot's 16:10 at the width the rail
+     gives it, so nothing is letterboxed, and the phone — narrow by nature — ends up exactly as
+     tall as the rest instead of standing head and shoulders above them. */
+  --slide-h: clamp(200px, 55vw, 388px);
   display: flex;
-  align-items: center;
+  align-items: start;
   gap: 14px;
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -569,21 +573,19 @@ p {
   display: flex;
   flex-direction: column;
   width: min(620px, 92%);
+  height: var(--slide-h, 388px);
   margin: 0;
 }
 
-/* The phone: a narrow column, its own proportions, nothing cut. It sets the height of the strip,
-   and that is fine — it is a phone. */
+/* The phone's column is exactly as wide as a phone at that height — 860 / 1864 is the shot's own
+   ratio — so its slide has no empty margin around the device. */
 .shot--phone {
-  width: min(260px, 38%);
+  width: calc(var(--slide-h, 388px) * 0.4614);
 }
 
 @media (max-width: 719px) {
   .shot {
     width: 88%;
-  }
-  .shot--phone {
-    width: 62%;
   }
 }
 
@@ -598,11 +600,12 @@ p {
   flex: 1 1 auto;
 }
 
-/* Whole picture, always: a 1280×800 shot at its own ratio, the phone at its own. Nothing is
-   cropped to make the rail tidy — a screenshot you cannot trust is worse than a ragged rail. */
+/* Whole picture, always: the slide has one height, and each shot fits inside it without being
+   cropped — a 1280×800 is exactly 16:10, the phone keeps its own shape. */
 .shot__open img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: contain;
   border-radius: 10px;
   outline: 1px solid rgba(255, 255, 255, 0.06);
   outline-offset: -1px;

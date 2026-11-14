@@ -547,7 +547,7 @@ p {
   /* One height for every slide. It follows the landscape shot's 16:10 at the width the rail
      gives it, so nothing is letterboxed, and the phone — narrow by nature — ends up exactly as
      tall as the rest instead of standing head and shoulders above them. */
-  --slide-h: clamp(200px, 55vw, 388px);
+  --slide-h: clamp(180px, 48.4vw, 388px);
   display: flex;
   align-items: start;
   gap: 14px;
@@ -586,6 +586,11 @@ p {
 @media (max-width: 719px) {
   .shot {
     width: 88%;
+  }
+  /* Same rule as on desktop: the phone's width comes from the shared height, and a later
+     `.shot` width would otherwise win over it. */
+  .shot--phone {
+    width: calc(var(--slide-h, 388px) * 0.4614);
   }
 }
 

@@ -1,18 +1,23 @@
-/* One stylesheet for the whole site. Tokens come from the app's brand guidelines
-   (docs/brand-guidelines.md in the app repo): graphite canvas, emerald accent, no gradients. */
+/* One stylesheet for the whole site. Every colour here is copied from the app's
+   src/styles/theme.css, because that file is the source of truth: canvas #161616, cards
+   on #1f1f1f, blue accent #3b82f6, emerald kept for success only. A site palette that
+   drifts from the app reads as a different product. */
 :root {
-  --canvas: #08090a;
-  --surface: #0c0c0e;
-  --card: #141417;
-  --elevated: #1a1a1e;
+  --canvas: #161616;
+  --canvas-subtle: #111111;
+  --surface: #1f1f1f;
   --border: rgba(255, 255, 255, 0.08);
   --border-hover: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.22);
   --fg: #f4f4f5;
   --fg-secondary: #a1a1aa;
   --fg-muted: #71717a;
-  --emerald: #10b981;
-  --emerald-soft: rgba(16, 185, 129, 0.12);
-  --danger: #f43f5e;
+  --fg-dim: #52525b;
+  --accent: #3b82f6;
+  --accent-strong: #2563eb;
+  --success: #10b981;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
   --radius-sm: 8px;
   --radius: 12px;
   --radius-lg: 16px;
@@ -90,7 +95,7 @@ p {
   top: 0;
   z-index: 40;
   border-bottom: 1px solid var(--border);
-  background: rgba(8, 9, 10, 0.82);
+  background: rgba(22, 22, 22, 0.82);
   backdrop-filter: blur(12px);
 }
 
@@ -115,7 +120,7 @@ p {
   height: 24px;
   border-radius: 6px;
   border: 1px solid var(--border);
-  background: var(--card);
+  background: var(--surface);
   padding: 2px;
 }
 
@@ -167,14 +172,22 @@ p {
   transform: translateY(1px);
 }
 
+/* The app's loudest control is a filled blue (accent-strong), not a white slab: the site
+   sends people to that same button, so it looks the same here. */
 .btn--primary {
-  background: var(--fg);
-  color: #0b0b0d;
+  background: var(--accent-strong);
+  color: #fff;
 }
 
 .btn--primary:hover {
-  background: #e4e4e7;
-  color: #0b0b0d;
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.btn:focus-visible,
+.shot__open:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .btn--ghost {
@@ -221,7 +234,7 @@ p {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--emerald);
+  background: var(--success);
 }
 
 .hero h1 {
@@ -261,7 +274,7 @@ p {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--card);
+  background: var(--canvas-subtle);
 }
 
 .hero__shot img {
@@ -332,39 +345,243 @@ p {
 .card__icon {
   font-family: var(--mono);
   font-size: 11px;
-  color: var(--emerald);
+  color: var(--accent);
 }
 
-/* ---------- screenshots ---------- */
-.shots {
+/* ---------- gallery ---------- */
+/* Landscape shots are 1280×800, so a 16/10 frame crops nothing. The card sits on the app's own
+   canvas colour, so the picture blends into the frame instead of being letterboxed. */
+.gallery {
   display: grid;
   gap: 14px;
-  margin-top: 28px;
+  margin-top: 26px;
 }
 
-@media (min-width: 720px) {
-  .shots {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .shots > :first-child {
-    grid-column: 1 / -1;
-  }
-}
-
-.shots figure {
+.shot {
+  display: flex;
+  flex-direction: column;
   margin: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  background: var(--canvas);
   overflow: hidden;
-  background: var(--card);
+  transition: border-color 140ms var(--ease-standard);
 }
 
-.shots figcaption {
-  padding: 10px 14px;
+.shot:hover,
+.shot:focus-within {
+  border-color: var(--border-hover);
+}
+
+.shot__open {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  flex: 1 1 auto;
+}
+
+.shot__open img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* Portrait shot: a device on a surface, not a slice of a phone screen glued to the card edge. */
+.shot--tall .shot__open {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: radial-gradient(120% 90% at 50% 0%, rgba(59, 130, 246, 0.1), transparent 65%),
+    var(--canvas-subtle);
+}
+
+.shot--tall img {
+  width: min(240px, 58%);
+  height: auto;
+  object-fit: contain;
+  border-radius: 14px;
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+}
+
+/* The hint rides on the picture: a permanent "click me" line under every caption would
+   repeat six times what one badge says once on hover or keyboard focus. */
+.shot__zoom {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--border-hover);
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.78);
+  backdrop-filter: blur(8px);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--fg-secondary);
+  opacity: 0;
+  translate: 0 4px;
+  transition: opacity 140ms var(--ease-standard), translate 140ms var(--ease-standard);
+}
+
+.shot__open:hover .shot__zoom,
+.shot__open:focus-visible .shot__zoom {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.shot figcaption {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 11px 14px;
   border-top: 1px solid var(--border);
+  background: var(--surface);
   font-family: var(--mono);
   font-size: 11px;
   color: var(--fg-muted);
+}
+
+.shot__index {
+  color: var(--fg-dim);
+}
+
+@media (min-width: 720px) {
+  .gallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .shot--lead {
+    grid-column: 1 / -1;
+  }
+  .shot--lead .shot__open img {
+    aspect-ratio: 16 / 9;
+  }
+  /* The phone is the only portrait shot: it owns a tall cell and the two landscape ones stack
+     beside it. Both sides of the row end at the same height, so the mosaic closes flush.
+     The picture is placed absolutely on purpose: a percentage height inside the cell resolves
+     against an indefinite box and the image ends up wider than its own card. */
+  .shot--tall {
+    grid-row: span 2;
+  }
+  .shot--tall .shot__open {
+    aspect-ratio: 3 / 4;
+    padding: 0;
+  }
+  .shot--tall img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    width: auto;
+    height: auto;
+    max-width: calc(100% - 36px);
+    max-height: calc(100% - 36px);
+    aspect-ratio: auto;
+  }
+}
+
+/* ---------- lightbox ---------- */
+.lightbox {
+  width: min(1120px, 94vw);
+  max-width: none;
+  padding: 0;
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius-lg);
+  background: var(--canvas-subtle);
+  color: var(--fg);
+  overflow: hidden;
+}
+
+.lightbox::backdrop {
+  background: rgba(10, 10, 11, 0.74);
+  backdrop-filter: blur(6px);
+}
+
+.lightbox[open] {
+  animation: lightbox-in 160ms var(--ease-entrance) both;
+}
+
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+    scale: 0.985;
+  }
+}
+
+.lightbox__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.lightbox__counter {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+.lightbox__stage {
+  display: block;
+  width: 100%;
+  max-height: 72vh;
+  object-fit: contain;
+  background: var(--canvas);
+}
+
+.lightbox__foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.lightbox__caption {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg-secondary);
+}
+
+.iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--fg-secondary);
+  cursor: pointer;
+  transition: background 120ms var(--ease-standard), border-color 120ms var(--ease-standard),
+    color 120ms var(--ease-standard);
+}
+
+.iconbtn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--border-hover);
+  color: var(--fg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbox[open] {
+    animation: none;
+  }
+  .shot__zoom {
+    transition: none;
+  }
 }
 
 /* ---------- pricing ---------- */
@@ -391,7 +608,7 @@ p {
 }
 
 .plan--featured {
-  border-color: rgba(16, 185, 129, 0.32);
+  border-color: rgba(59, 130, 246, 0.34);
 }
 
 .plan__head {
@@ -543,7 +760,7 @@ p {
 }
 
 .doc-side a[aria-current='page'] {
-  color: var(--emerald);
+  color: var(--accent);
 }
 
 .prose {
@@ -592,7 +809,7 @@ p {
 }
 
 .prose a {
-  color: var(--emerald);
+  color: var(--accent);
 }
 
 .prose code {
@@ -669,7 +886,7 @@ p {
 }
 
 .legal a {
-  color: var(--emerald);
+  color: var(--accent);
 }
 
 .releases {
@@ -743,7 +960,7 @@ p {
 .field textarea:focus,
 .field select:focus {
   outline: none;
-  border-color: rgba(16, 185, 129, 0.5);
+  border-color: rgba(59, 130, 246, 0.55);
 }
 
 .field textarea {
@@ -812,5 +1029,5 @@ p {
 
 .tag--open {
   border-color: rgba(16, 185, 129, 0.35);
-  color: var(--emerald);
+  color: var(--success);
 }

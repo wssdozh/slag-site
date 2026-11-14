@@ -16,23 +16,33 @@ const plans: Array<{
 }> = plansData?.plans ?? [];
 const money = (rub: number) => (rub > 0 ? `${rub} ₽ / мес` : '0 ₽ навсегда');
 const gb = (mb: number) => (mb >= 1024 ? `${Math.round(mb / 1024)} ГБ` : `${mb} МБ`);
+// "2 устройств" is what a template without plural forms writes; the plan limits are the one
+// place on the page where a number meets a noun in the accusative.
+const devices = (count: number) => {
+  const tail = count % 100;
+  const last = count % 10;
+  if (tail >= 11 && tail <= 14) return `${count} устройств`;
+  if (last === 1) return `${count} устройство`;
+  if (last >= 2 && last <= 4) return `${count} устройства`;
+  return `${count} устройств`;
+};
 
 const features = [
   {
     title: 'Markdown на диске',
-    body: 'Каждая запись — .md с YAML frontmatter. Папка, корзина и вложения — обычные файлы, которые видно в проводнике.',
+    body: 'Каждая запись — .md с YAML frontmatter. Папка, корзина и вложения — файлы, которые видно в проводнике.',
   },
   {
     title: 'Поток как в мессенджере',
-    body: 'Одно поле ввода, Enter отправляет. Заметка, задача или статья — выбирается в композере, а не в отдельной форме.',
+    body: 'Одно поле ввода, Enter отправляет. Тип записи выбирается в нём же: заметка, задача или статья.',
   },
   {
     title: 'Поиск по всему хранилищу',
-    body: 'Orama BM25 с опечатками ищит по заголовкам, тексту, тегам и папкам. Открывается на Ctrl+K.',
+    body: 'Orama BM25 с опечатками ищет по заголовкам, тексту, тегам и папкам. Вызов — Ctrl+K.',
   },
   {
     title: 'Аудио и вложения рядом',
-    body: 'Войсы, картинки и файлы живут в .attachments/ и открываются из карточки — без облака посередине.',
+    body: 'Войсы, картинки и файлы лежат в .attachments/ и открываются из карточки — без облака посередине.',
   },
   {
     title: 'ИИ-разбор входящих',
@@ -45,11 +55,10 @@ const features = [
 ];
 
 const shots = [
-  { src: '/shots/editor.png', caption: 'редактор: задача, теги, панель папки' },
-  { src: '/shots/search.png', caption: 'поиск по хранилищу' },
-  { src: '/shots/triage.png', caption: 'разбор входящих' },
-  { src: '/shots/folder.png', caption: 'папка: описание для ИИ и медиа' },
-  { src: '/shots/mobile.png', caption: 'телефон: задачи' },
+  { src: '/shots/search.png', caption: 'поиск по хранилищу', width: 1280, height: 800, shape: 'shot--lead' },
+  { src: '/shots/triage.png', caption: 'разбор входящих', width: 1280, height: 800, shape: '' },
+  { src: '/shots/mobile.png', caption: 'телефон: задачи', width: 390, height: 844, shape: 'shot--tall' },
+  { src: '/shots/folder.png', caption: 'папка: описание для ИИ и медиа', width: 1280, height: 800, shape: '' },
 ];
 
 const faq = [
@@ -84,7 +93,7 @@ const faq = [
 
     <h1>
       Заметки со скоростью чата.<br />
-      <span>Файлы остаются вашими.</span>
+      <span>Файлы остаются твоими.</span>
     </h1>
 
     <p class="hero__lead">
@@ -99,7 +108,7 @@ const faq = [
       <a class="btn btn--ghost" href="/releases">Все платформы и версии</a>
     </div>
 
-    <p class="hero__note">портативная сборка · работает офлайн · без установки Node.js</p>
+    <p class="hero__note">портативная сборка · работает офлайн</p>
 
     <div class="hero__shot">
       <img src="/shots/editor.png" alt="Экран SLAG: редактор, теги, панель папки" width="1280" height="720" />
@@ -108,9 +117,9 @@ const faq = [
 
   <section class="wrap section" id="features">
     <span class="section__label">что внутри</span>
-    <h2>Инструмент, а не платформа</h2>
+    <h2>Один экран, одна запись</h2>
     <p class="section__lead">
-      Никаких воркспейсов, шаблонов и онбординга на десять экранов. Открыл, записал, закрыл.
+      Воркспейсов, шаблонов и онбординга на десять шагов тут нет.
     </p>
 
     <div class="grid grid--3">
@@ -125,14 +134,35 @@ const faq = [
 
   <section class="wrap section" id="screens">
     <span class="section__label">как выглядит</span>
-    <h2>Тёмно, плотно, без декораций</h2>
-    <p class="section__lead">Скриншоты снимаются с рабочей сборки, а не рисуются в макете.</p>
+    <h2>Поиск, папка, разбор, телефон</h2>
 
-    <div class="shots">
-      {shots.map((shot) => (
-        <figure>
-          <img src={shot.src} alt={shot.caption} loading="lazy" />
-          <figcaption>{shot.caption}</figcaption>
+    <div class="gallery">
+      {shots.map((shot, index) => (
+        <figure class={`shot ${shot.shape}`}>
+          <button
+            class="shot__open"
+            type="button"
+            data-shot
+            data-src={shot.src}
+            data-caption={shot.caption}
+            data-width={shot.width}
+            data-height={shot.height}
+            aria-label={`Открыть скриншот: ${shot.caption}`}
+          >
+            <img
+              src={shot.src}
+              alt={shot.caption}
+              width={shot.width}
+              height={shot.height}
+              loading="lazy"
+              decoding="async"
+            />
+            <span class="shot__zoom" aria-hidden="true">открыть</span>
+          </button>
+          <figcaption>
+            <span class="shot__index">{String(index + 1).padStart(2, '0')}</span>
+            {shot.caption}
+          </figcaption>
         </figure>
       ))}
     </div>
@@ -140,14 +170,14 @@ const faq = [
 
   <section class="wrap section" id="data">
     <span class="section__label">где мои данные</span>
-    <h2>Локально — по умолчанию, а не по подписке</h2>
+    <h2>Хранилище — папка на диске</h2>
 
     <div class="grid grid--3">
       <article class="card">
-        <h3><span class="card__icon">1</span> Хранилище — папка</h3>
+        <h3><span class="card__icon">1</span> Папку выбираешь сам</h3>
         <p>
-          Ты выбираешь папку на диске. Приложение не прячет её в свою базу: потерялся компьютер —
-          открыл папку на другом, всё на месте.
+          Приложение не прячет заметки в свою базу. Сломался компьютер — открыл ту же папку на
+          другом, всё на месте.
         </p>
       </article>
       <article class="card">
@@ -171,8 +201,7 @@ const faq = [
     <span class="section__label">скачать</span>
     <h2>Сборка {version}</h2>
     <p class="section__lead">
-      Windows и Android обновляются изнутри приложения. Linux ставится пакетным менеджером, поэтому
-      там кнопка ведёт на страницу релиза.
+      Windows и Android обновляются изнутри приложения. Linux — пакетным менеджером.
     </p>
 
     <div class="grid grid--3">
@@ -206,7 +235,7 @@ const faq = [
 
   <section class="wrap section" id="pricing">
     <span class="section__label">тарифы</span>
-    <h2>Платишь за релей, а не за доступ к заметкам</h2>
+    <h2>Сколько стоит синхронизация</h2>
     <p class="section__lead">
       Само приложение бесплатное и работает без сети. Подписка оплачивает синхронизацию: устройства,
       место под недоставленные вложения и ИИ-разбор.
@@ -220,7 +249,7 @@ const faq = [
             <span class="plan__price">{money(plan.priceRub)}</span>
           </div>
           <p class="plan__desc">{plan.summary}</p>
-          <p class="plan__limits">{plan.devices} устройств · кеш {gb(plan.cacheMb)}</p>
+          <p class="plan__limits">{devices(plan.devices)} · кеш {gb(plan.cacheMb)}</p>
           <ul>
             {plan.features.map((feature: string) => <li>{feature}</li>)}
           </ul>
@@ -235,7 +264,7 @@ const faq = [
           )}
           {plan.priceRub > 0 && (
             <p class="notice" data-pay-note hidden>
-              Оплата ещё не подключена: эквайринг на согласовании. Напишите на{' '}
+              Оплата ещё не подключена: эквайринг на согласовании. Напиши на{' '}
               <a href="mailto:support@slag.app">support@slag.app</a> — включим тариф вручную и зачтём
               оплату, когда он заработает.
             </p>
@@ -246,13 +275,13 @@ const faq = [
 
     <div class="notice">
       Свой релей — бесплатно и без лимитов: синхронизация открыта, ставится на домашний сервер или
-      VPS. Тарифы выше нужны только тем, кому не хочется администрировать.
+      VPS. Платные тарифы нужны тем, кому не хочется администрировать.
     </div>
   </section>
 
   <section class="wrap section" id="faq">
     <span class="section__label">вопросы</span>
-    <h2>Коротко о главном</h2>
+    <h2>Про диск, сервер и аккаунт</h2>
 
     <div class="faq">
       {faq.map((item) => (
@@ -264,6 +293,25 @@ const faq = [
     </div>
   </section>
 
+  <dialog class="lightbox" data-lightbox aria-label="Скриншоты SLAG">
+    <div class="lightbox__bar">
+      <span class="lightbox__counter" data-counter aria-live="polite">01 / 04</span>
+      <button class="iconbtn" type="button" data-close aria-label="Закрыть">
+        <span aria-hidden="true">✕</span>
+      </button>
+    </div>
+    <img class="lightbox__stage" data-stage src="/shots/search.png" alt="" width="1280" height="800" />
+    <div class="lightbox__foot">
+      <button class="iconbtn" type="button" data-prev aria-label="Предыдущий скриншот">
+        <span aria-hidden="true">←</span>
+      </button>
+      <p class="lightbox__caption" data-caption></p>
+      <button class="iconbtn" type="button" data-next aria-label="Следующий скриншот">
+        <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  </dialog>
+
   <script>
     // The checkout is not wired to an acquirer yet, and the bank wants a real, clickable path with a
     // plain message instead of a dead button. One listener, no framework.
@@ -271,6 +319,76 @@ const faq = [
       button.addEventListener('click', () => {
         const note = button.parentElement?.querySelector('[data-pay-note]');
         if (note instanceof HTMLElement) note.hidden = !note.hidden;
+      });
+    }
+
+    // Gallery: a native <dialog> does the modal work (focus trap, Esc, backdrop, top layer), so
+    // this only swaps the picture and keeps the index in range. Arrow keys, click and a short
+    // horizontal swipe all move one step; nothing loads that the page has not loaded already.
+    const openers = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-shot]'));
+    const box = document.querySelector<HTMLDialogElement>('[data-lightbox]');
+    const stage = box?.querySelector<HTMLImageElement>('[data-stage]') ?? null;
+    const caption = box?.querySelector<HTMLElement>('[data-caption]') ?? null;
+    const counter = box?.querySelector<HTMLElement>('[data-counter]') ?? null;
+
+    if (box && stage && caption && counter && openers.length > 0) {
+      const pad = (value: number) => String(value).padStart(2, '0');
+      let index = 0;
+
+      const paint = () => {
+        const opener = openers[index];
+        if (!opener) return;
+        const src = opener.dataset.src ?? '';
+        const text = opener.dataset.caption ?? '';
+        stage.src = src;
+        stage.alt = text;
+        stage.width = Number(opener.dataset.width ?? 0);
+        stage.height = Number(opener.dataset.height ?? 0);
+        caption.textContent = text;
+        counter.textContent = `${pad(index + 1)} / ${pad(openers.length)}`;
+      };
+
+      const step = (delta: number) => {
+        index = (index + delta + openers.length) % openers.length;
+        paint();
+      };
+
+      for (const [position, opener] of openers.entries()) {
+        opener.addEventListener('click', () => {
+          index = position;
+          paint();
+          box.showModal();
+        });
+      }
+
+      box.querySelector('[data-prev]')?.addEventListener('click', () => step(-1));
+      box.querySelector('[data-next]')?.addEventListener('click', () => step(1));
+      box.querySelector('[data-close]')?.addEventListener('click', () => box.close());
+
+      box.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          step(1);
+        } else if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          step(-1);
+        }
+      });
+
+      // A click that lands on the dialog itself, not on anything inside it, is a backdrop click.
+      box.addEventListener('click', (event) => {
+        if (event.target === box) box.close();
+      });
+
+      let startX: number | null = null;
+      box.addEventListener('pointerdown', (event) => {
+        startX = event.clientX;
+      });
+      box.addEventListener('pointerup', (event) => {
+        if (startX === null) return;
+        const delta = event.clientX - startX;
+        startX = null;
+        if (Math.abs(delta) > 45) step(delta < 0 ? 1 : -1);
       });
     }
   </script>

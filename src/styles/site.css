@@ -497,11 +497,56 @@ p {
 }
 
 /* ---------- gallery ---------- */
-/* A carousel, not a mosaic: four screenshots at a readable size beat four thumbnails, and the
-   same four still work on a phone. Native scrolling with snap points brings the momentum for
-   free; the arrows exist for pointers, and the counter is the only chrome that has to be read. */
-.carousel {
+/* The rail is landscape only, and the phone stands beside it in its own column: a phone shot at
+   a legible size is taller than any 16/10 slide, so it either crops, shrinks to a thumbnail, or
+   gets a column of its own. It gets a column. */
+.gallery {
+  display: grid;
+  gap: 24px;
   margin-top: 22px;
+}
+
+@media (min-width: 900px) {
+  .gallery {
+    grid-template-columns: minmax(0, 1fr) 250px;
+    align-items: start;
+  }
+}
+
+.phone {
+  margin: 0;
+}
+
+.phone__open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.phone__open img {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@media (max-width: 899px) {
+  .phone {
+    width: 240px;
+    margin: 0 auto;
+  }
+}
+
+/* ---------- carousel ---------- */
+/* Native scrolling with snap points brings the momentum for free: the rail is dragged, swiped,
+   and moves on its own when nobody is touching it. */
+.carousel {
+  margin-top: 0;
 }
 
 .carousel__head {
@@ -539,11 +584,6 @@ p {
   transition: transform var(--dur-reveal) var(--ease-standard);
 }
 
-.carousel__nav {
-  display: flex;
-  gap: 8px;
-}
-
 .carousel__track {
   display: flex;
   align-items: start;
@@ -571,13 +611,24 @@ p {
 
 .shot {
   flex: 0 0 auto;
-  width: min(680px, 76%);
+  display: flex;
+  flex-direction: column;
+  width: min(620px, 92%);
+  margin: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
-/* The phone is the one portrait shot: it gets a narrow slot instead of half a metre of empty
-   canvas beside a device. */
+@media (max-width: 719px) {
+  .shot {
+    width: 88%;
+  }
+}
+
+/* The phone is the one portrait shot: a narrow column, full height, no crop. It is the tallest
+   thing in the rail, and that is fine — it is a phone. */
 .shot--phone {
-  width: min(300px, 42%);
+  width: min(320px, 40%);
 }
 
 @media (max-width: 719px) {
@@ -587,16 +638,6 @@ p {
   .shot--phone {
     width: 62%;
   }
-}
-
-/* No card, no frame: the screenshot is the object. One hairline outline at 6% white keeps a
-   dark picture from bleeding into the page, which a border was doing too loudly. */
-.shot {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
 }
 
 .shot__open {
@@ -610,39 +651,17 @@ p {
   flex: 1 1 auto;
 }
 
-/* `contain`, so a 1280×800 shot keeps its proportions in the shared 16/10 slot and the phone
-   stays a phone instead of a cropped slice of one. */
+/* Whole picture, always: a 1280×800 shot at its own ratio, the phone at its own. Nothing is
+   cropped to make the rail tidy — a screenshot you cannot trust is worse than a ragged rail. */
 .shot__open img {
   width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: contain;
+  height: auto;
   border-radius: 10px;
   outline: 1px solid rgba(255, 255, 255, 0.06);
   outline-offset: -1px;
   /* The rail is dragged with the pointer; a native image drag would fight it. */
   user-select: none;
   -webkit-user-drag: none;
-}
-
-.shot--phone .shot__open {
-  /* Same slot as a landscape shot: one rail height, nothing letterboxes. */
-  aspect-ratio: 16 / 10;
-}
-
-.shot--phone img {
-  /* Absolute: a percentage height inside an aspect-ratio box is not resolved by every engine,
-     and the phone ends up as tall as its own screenshot. */
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  width: auto;
-  height: auto;
-  max-width: calc(100% - 32px);
-  max-height: calc(100% - 32px);
-  aspect-ratio: auto;
-  outline: 0;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
 }
 
 /* The hint rides on the picture: a permanent "click me" line under every caption would
@@ -672,20 +691,6 @@ p {
 .shot__open:focus-visible .shot__zoom {
   opacity: 1;
   translate: 0 0;
-}
-
-.shot figcaption {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 12px 2px 0;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--fg-muted);
-}
-
-.shot__index {
-  color: var(--fg-dim);
 }
 
 /* ---------- lightbox ---------- */

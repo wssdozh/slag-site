@@ -20,7 +20,11 @@ const box = document.querySelector<HTMLDialogElement>('[data-lightbox]');
 const stage = box?.querySelector<HTMLImageElement>('[data-stage]') ?? null;
 const caption = box?.querySelector<HTMLElement>('[data-caption]') ?? null;
 const counter = box?.querySelector<HTMLElement>('[data-counter]') ?? null;
-const originals = track ? Array.from(track.querySelectorAll<HTMLButtonElement>('[data-shot]')) : [];
+// Every picture on the page that opens full size: the three in the rail and the phone beside it.
+// The rail clones its slides, so the phone cannot be found through the rail's children.
+const originals = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-shot]')).sort(
+  (a, b) => Number(a.dataset.index ?? 0) - Number(b.dataset.index ?? 0),
+);
 const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 // Carousel without arrows: the rail is dragged, swiped, or moves on its own when nobody is
@@ -28,7 +32,7 @@ const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
 // when the first clone settles exactly where the first slide was, the rail jumps back one
 // cycle without animation, so the pictures appear to loop forever.
 if (track && count && originals.length > 1) {
-  const total = originals.length;
+  const total = Array.from(track.querySelectorAll<HTMLButtonElement>('[data-shot]')).length;
   const originSlides = Array.from(track.querySelectorAll<HTMLElement>('.shot'));
 
   for (const slide of originSlides) {
@@ -229,8 +233,9 @@ if (box && stage && caption && counter && originals.length > 0) {
     pressY = event.clientY;
   });
 
-  // Delegated, so the cloned slides open the same picture as the originals they copy.
-  track?.addEventListener('click', (event) => {
+  // Delegated from the document, so the phone outside the rail and the cloned slides inside it
+  // all open the picture their `data-index` points at.
+  document.addEventListener('click', (event) => {
     const opener = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-shot]') : null;
     if (!opener) return;
     const dragged =

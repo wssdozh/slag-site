@@ -95,12 +95,21 @@ const facts = [
   },
 ];
 
+// The rail is landscape only: a phone screenshot at a legible size is taller than a 16/10 slide
+// can ever be, so it gets its own column instead of being shrunk into the rail.
 const shots = [
   { src: '/shots/search.png', caption: 'поиск по хранилищу', width: 1280, height: 800, phone: false },
   { src: '/shots/triage.png', caption: 'разбор входящих', width: 1280, height: 800, phone: false },
-  { src: '/shots/mobile.png', caption: 'телефон: задачи', width: 390, height: 844, phone: true },
   { src: '/shots/folder.png', caption: 'папка: описание для ИИ и медиа', width: 1280, height: 800, phone: false },
 ];
+
+const phoneShot = {
+  src: '/shots/mobile.png',
+  caption: 'телефон: задачи',
+  width: 390,
+  height: 844,
+  index: shots.length,
+};
 
 // The changelog is the release notes the app itself shows, shortened to their first line:
 // a landing that never changes looks abandoned next to these.
@@ -224,61 +233,83 @@ const faq = [
     <span class="section__label">как выглядит</span>
     <h2>Поиск, папка, разбор, телефон</h2>
 
-    <div class="carousel" data-carousel>
-      <div class="carousel__head">
-        <span class="carousel__count">
-          <span data-carousel-count>01</span> / {String(shots.length).padStart(2, '0')}
-        </span>
-      </div>
+    <div class="gallery">
+      <div class="carousel" data-carousel>
+        <div class="carousel__head">
+          <span class="carousel__count">
+            <span data-carousel-count>01</span> / {String(shots.length).padStart(2, '0')}
+          </span>
+        </div>
 
-      <div
-        class="carousel__track"
-        data-carousel-track
-        tabindex="0"
-        role="group"
-        aria-roledescription="карусель"
-        aria-label="Скриншоты приложения"
-      >
-        {shots.map((shot, index) => (
-          <figure
-            class={`shot${shot.phone ? ' shot--phone' : ''}`}
-            role="group"
-            aria-roledescription="слайд"
-            aria-label={`${index + 1} из ${shots.length}: ${shot.caption}`}
-          >
-            <button
-              class="shot__open"
-              type="button"
-              data-shot
-              data-index={index}
-              data-src={shot.src}
-              data-caption={shot.caption}
-              data-width={shot.width}
-              data-height={shot.height}
-              aria-label={`Открыть скриншот: ${shot.caption}`}
+        <div
+          class="carousel__track"
+          data-carousel-track
+          tabindex="0"
+          role="group"
+          aria-roledescription="карусель"
+          aria-label="Скриншоты приложения"
+        >
+          {shots.map((shot, index) => (
+            <figure
+              class="shot"
+              role="group"
+              aria-roledescription="слайд"
+              aria-label={`${index + 1} из ${shots.length}: ${shot.caption}`}
             >
-              <img
-                src={shot.src}
-                alt={shot.caption}
-                width={shot.width}
-                height={shot.height}
-                loading={index === 0 ? 'eager' : 'lazy'}
-                decoding="async"
-                draggable="false"
-              />
-              <span class="shot__zoom" aria-hidden="true">открыть</span>
-            </button>
-            <figcaption>
-              <span class="shot__index">{String(index + 1).padStart(2, '0')}</span>
-              {shot.caption}
-            </figcaption>
-          </figure>
-        ))}
+              <button
+                class="shot__open"
+                type="button"
+                data-shot
+                data-index={index}
+                data-src={shot.src}
+                data-caption={shot.caption}
+                data-width={shot.width}
+                data-height={shot.height}
+                aria-label={`Открыть скриншот: ${shot.caption}`}
+              >
+                <img
+                  src={shot.src}
+                  alt={shot.caption}
+                  width={shot.width}
+                  height={shot.height}
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  draggable="false"
+                />
+                <span class="shot__zoom" aria-hidden="true">открыть</span>
+              </button>
+            </figure>
+          ))}
+        </div>
+
+        <div class="carousel__progress" aria-hidden="true">
+          <span data-carousel-progress></span>
+        </div>
       </div>
 
-      <div class="carousel__progress" aria-hidden="true">
-        <span data-carousel-progress></span>
-      </div>
+      <figure class="phone">
+        <button
+          class="phone__open"
+          type="button"
+          data-shot
+          data-index={phoneShot.index}
+          data-src={phoneShot.src}
+          data-caption={phoneShot.caption}
+          data-width={phoneShot.width}
+          data-height={phoneShot.height}
+          aria-label={`Открыть скриншот: ${phoneShot.caption}`}
+        >
+          <img
+            src={phoneShot.src}
+            alt="Экран SLAG на телефоне: список задач"
+            width={phoneShot.width}
+            height={phoneShot.height}
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+          />
+        </button>
+      </figure>
     </div>
   </section>
 

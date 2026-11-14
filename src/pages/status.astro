@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Статус SLAG"
+  description="Работает ли релей синхронизации: версия, время работы и время последней проверки."
+>
+  <section class="wrap" style="padding-top:56px">
+    <span class="section__label">статус</span>
+    <h1 style="font-size:clamp(24px,4vw,34px);margin-top:8px">Релей синхронизации</h1>
+    <p class="section__lead">
+      Проверка идёт из браузера: страница запрашивает <code>/health</code> у того же сервера, на
+      котором открыта. Заметки и приложение работают и без этой страницы — без релея просто нет
+      обмена между устройствами.
+    </p>
+
+    <div class="status" data-status data-state="checking">
+      <span class="status__dot" aria-hidden="true"></span>
+      <div class="status__body">
+        <p class="status__title" data-status-title>Проверяю…</p>
+        <p class="status__meta" data-status-meta></p>
+      </div>
+    </div>
+
+    <p class="docs-links">
+      <a href="/health">сырой /health</a>
+      <a href="https://github.com/wssdozh/slag-v2/issues">сообщить о проблеме</a>
+    </p>
+  </section>
+
+  <script>
+    import '../scripts/status';
+  </script>
+</Base>

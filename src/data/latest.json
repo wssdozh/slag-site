@@ -6,5 +6,9 @@
     "windows": "https://github.com/wssdozh/slag-v2/releases/download/v0.2.4/SLAG_0.2.4_x64-setup.exe",
     "android": "https://github.com/wssdozh/slag-v2/releases/download/v0.2.4/SLAG-0.2.4-universal.apk",
     "linux": "https://github.com/wssdozh/slag-v2/releases/latest"
+  },
+  "sizes": {
+    "windows": 20347904,
+    "android": 18227230
   }
 }

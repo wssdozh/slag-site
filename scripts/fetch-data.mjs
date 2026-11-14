@@ -42,6 +42,19 @@ async function updateLatest() {
   const android = platforms['android-aarch64'] ?? {};
   const pick = (...assets) => assets.find((asset) => asset && typeof asset.url === 'string')?.url ?? RELEASE_PAGE;
 
+  // File sizes are a nice-to-have: the release page is the only thing that knows them, and a
+  // missing number is better than an invented one, so this half is allowed to fail alone.
+  const sizes = { windows: null, android: null };
+  try {
+    const release = await getJson(`https://api.github.com/repos/${REPO}/releases/tags/v${manifest.version}`);
+    const assets = Array.isArray(release.assets) ? release.assets : [];
+    const sizeOf = (pattern) => assets.find((asset) => pattern.test(String(asset.name)) && asset.size > 0)?.size ?? null;
+    sizes.windows = sizeOf(/\.exe$/i);
+    sizes.android = sizeOf(/\.apk$/i);
+  } catch (error) {
+    console.warn(`latest sizes: ${error.message}`);
+  }
+
   const latest = {
     version: manifest.version,
     pubDate: manifest.pub_date ?? null,
@@ -51,9 +64,10 @@ async function updateLatest() {
       android: pick(android.apk, android.installer),
       linux: RELEASE_PAGE,
     },
+    sizes,
   };
   await writeJson('latest.json', latest);
-  console.log(`latest: v${latest.version}`);
+  console.log(`latest: v${latest.version} (${sizes.windows ?? '?'} / ${sizes.android ?? '?'} bytes)`);
 }
 
 async function updateReleases() {

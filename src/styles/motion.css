@@ -1,0 +1,98 @@
+/* Motion for the whole site: one vocabulary, four speeds and an off switch.
+   House rules — animate transform/opacity/filter only, name every transitioned property, and
+   never let JavaScript be the thing that makes content visible. */
+
+:root {
+  --dur-press: 100ms;
+  --dur-micro: 180ms;
+  --dur-reveal: 320ms;
+  --dur-hero: 560ms;
+  --dist-reveal: 10px;
+  --stagger: 40ms;
+}
+
+/* ---------- hero ---------- */
+/* The first screen is the one the reader is already looking at, so it gets a staged entrance and
+   no observer. The order lives in :nth-child, so the markup carries no timing attributes. */
+.hero > * {
+  animation: hero-in var(--dur-hero) var(--ease-entrance) both;
+  animation-delay: calc(var(--hero-step, 0) * 60ms);
+}
+
+.hero > :nth-child(2) {
+  --hero-step: 1;
+}
+.hero > :nth-child(3) {
+  --hero-step: 2;
+}
+.hero > :nth-child(4) {
+  --hero-step: 3;
+}
+.hero > :nth-child(5) {
+  --hero-step: 4;
+}
+.hero > :nth-child(6) {
+  --hero-step: 5;
+}
+
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+
+/* ---------- section reveals ---------- */
+/* The hidden state comes from selectors that exist in the markup, never from a class a script
+   adds, and it is gated on `.js` which an inline head script sets only when scripting works.
+   No bundle, no observer, no scripting — the page is simply visible. */
+.js :is(.section, .cta) > *:not(.grid, .plans, .faq, .changelog),
+.js :is(.section, .cta) > :is(.grid, .plans, .faq, .changelog) > * {
+  opacity: 0;
+  translate: 0 var(--dist-reveal);
+  transition:
+    opacity var(--dur-reveal) var(--ease-standard),
+    translate var(--dur-reveal) var(--ease-entrance);
+  transition-delay: calc(var(--stagger-index, 0) * var(--stagger));
+}
+
+.js :is(.section, .cta) > .is-in,
+.js :is(.section, .cta) > :is(.grid, .plans, .faq, .changelog) > .is-in {
+  opacity: 1;
+  translate: 0 0;
+}
+
+/* ---------- card and row micro-motion ---------- */
+/* 150ms on a pointer that is already over the element: fast enough to feel like state, slow
+   enough to read as a surface lifting. */
+.card,
+.plan,
+.changelog__row,
+.ticket,
+.release {
+  transition-property: border-color, background-color, translate;
+  transition-duration: var(--dur-micro);
+  transition-timing-function: var(--ease-standard);
+}
+
+.card:hover,
+.plan:hover {
+  translate: 0 -2px;
+}
+
+/* ---------- off switch ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .hero > * {
+    animation: none;
+  }
+  .js :is(.section, .cta) > *,
+  .js :is(.section, .cta) > :is(.grid, .plans, .faq, .changelog) > * {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .card:hover,
+  .plan:hover {
+    translate: none;
+  }
+}

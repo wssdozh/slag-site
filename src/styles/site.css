@@ -163,8 +163,34 @@ p {
   color: var(--fg-secondary);
 }
 
-.site-nav a[aria-current='page'] {
+.site-nav a[aria-current='page'],
+.site-nav a[data-active] {
   color: var(--fg);
+}
+
+/* The active in-page entry gets an underline that grows from the left, not a colour swap: on a
+   dark bar a 12% brightness change is nearly invisible. */
+.site-nav a[data-active] {
+  position: relative;
+}
+
+.site-nav a[data-active]::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(1);
+  transform-origin: left center;
+  animation: nav-underline var(--dur-micro) var(--ease-entrance);
+}
+
+@keyframes nav-underline {
+  from {
+    transform: scaleX(0);
+  }
 }
 
 @media (min-width: 860px) {
@@ -351,6 +377,12 @@ p {
   }
 }
 
+/* The feature tiles carry pictures of different weight; stretching them to one height would pad
+   the text-only one with two hundred empty pixels. Natural height, ragged bottoms. */
+.grid--features {
+  align-items: start;
+}
+
 .card {
   padding: 20px;
   border: 1px solid var(--border);
@@ -377,6 +409,84 @@ p {
   color: var(--accent);
 }
 
+/* One row of proof under the hero: what the product is, said in three lines. Both reference
+   sites put a logo wall here; we have no customers to show, and a fake wall is worse than none. */
+.proof {
+  display: grid;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+@media (min-width: 720px) {
+  .proof {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  /* The divider is a border on the cell, not a gap filled with a background: a background on
+     the wrapper would also paint its inline padding and leave a stripe beside the first cell. */
+  .proof__item + .proof__item {
+    border-left: 1px solid var(--border);
+  }
+}
+
+.proof__item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 18px 16px;
+  transition: background-color var(--dur-micro) var(--ease-standard);
+}
+
+.proof__item:hover {
+  background: var(--surface);
+}
+
+.proof__label {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-dim);
+}
+
+.proof__text {
+  font-size: 14px;
+  color: var(--fg-secondary);
+  transition: color var(--dur-micro) var(--ease-standard);
+}
+
+.proof__item:hover .proof__text {
+  color: var(--fg);
+}
+
+/* A real fragment of the app inside the card that claims it: the crop is the argument, so the
+   picture is zoomed into the part that proves the sentence, not scaled down to a thumbnail. */
+.card__visual {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--canvas-subtle);
+}
+
+.card__shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(var(--zoom, 1.6));
+  transform-origin: var(--x, 50%) var(--y, 50%);
+  transition: transform 240ms var(--ease-standard);
+}
+
+.card:hover .card__shot {
+  transform: scale(calc(var(--zoom, 1.6) * 1.04));
+}
+
 /* ---------- gallery ---------- */
 /* A carousel, not a mosaic: four screenshots at a readable size beat four thumbnails, and the
    same four still work on a phone. Native scrolling with snap points brings the momentum for
@@ -398,6 +508,26 @@ p {
   font-size: 11px;
   font-variant-numeric: tabular-nums;
   color: var(--fg-muted);
+}
+
+/* Position as a line instead of a row of dots: four slides do not need a second control, and a
+   bar reads at a glance without counting anything. */
+.carousel__progress {
+  position: relative;
+  height: 2px;
+  margin-top: 16px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.carousel__progress span {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-reveal) var(--ease-standard);
 }
 
 .carousel__nav {
@@ -567,6 +697,19 @@ p {
 .lightbox::backdrop {
   background: rgba(10, 10, 11, 0.74);
   backdrop-filter: blur(6px);
+  opacity: 1;
+  transition:
+    opacity var(--dur-micro) var(--ease-standard),
+    backdrop-filter var(--dur-micro) var(--ease-standard);
+}
+
+/* The scrim thickens as the surface lands, so the dialog reads as arriving over the page instead
+   of being pasted on top of it. Browsers without ::backdrop transitions just cut. */
+@starting-style {
+  .lightbox[open]::backdrop {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
 }
 
 .lightbox[open] {
@@ -746,6 +889,32 @@ p {
   color: var(--fg-secondary);
 }
 
+/* The unfold: the row goes 0fr → 1fr, which animates a height nobody had to measure. The inner
+   element clips, so the panel's own border never shows while it is closed. */
+.pay-note {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-micro) var(--ease-standard);
+}
+
+.pay-note[data-open='true'] {
+  grid-template-rows: 1fr;
+}
+
+.pay-note__inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pay-note .notice {
+  opacity: 0;
+  transition: opacity var(--dur-micro) var(--ease-standard);
+}
+
+.pay-note[data-open='true'] .notice {
+  opacity: 1;
+}
+
 /* ---------- faq ---------- */
 .faq {
   margin-top: 24px;
@@ -762,13 +931,47 @@ p {
 }
 
 .faq summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
+  list-style: none;
 }
 
-.faq summary::marker {
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+/* The arrow points right, tips down when closed and up when open: one glyph, two states. */
+.faq summary::after {
+  content: '→';
   color: var(--fg-muted);
+  transform: rotate(90deg);
+  transition: transform var(--dur-micro) var(--ease-standard);
+}
+
+.faq details[open] summary::after {
+  transform: rotate(-90deg);
+}
+
+/* Progressive: browsers with interpolate-size animate the body, the rest simply open. */
+:root {
+  interpolate-size: allow-keywords;
+}
+
+.faq details::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition:
+    block-size var(--dur-micro) var(--ease-standard),
+    content-visibility var(--dur-micro) allow-discrete;
+}
+
+.faq details[open]::details-content {
+  block-size: auto;
 }
 
 .faq details p {
@@ -1187,9 +1390,22 @@ select:focus-visible {
 /* Closing band. Both reference sites end on one; a page that just stops at the FAQ asks the
    reader to scroll back up to act. */
 .cta {
+  position: relative;
+  overflow: hidden;
   padding-block: 76px 80px;
   border-top: 1px solid var(--border);
   text-align: center;
+}
+
+/* A pool of accent light behind the last call to action: the page has been dark for four
+   thousand pixels, and this is the one place where a little glow does a job. */
+.cta::before {
+  content: '';
+  position: absolute;
+  inset: -60px 12% auto;
+  height: 320px;
+  background: radial-gradient(55% 100% at 50% 0%, rgba(59, 130, 246, 0.14), transparent 72%);
+  pointer-events: none;
 }
 
 .cta h2 {
@@ -1303,5 +1519,67 @@ select:focus-visible {
   .cta__actions .btn {
     height: 44px;
     font-size: 14px;
+  }
+}
+
+/* ---------- status page ---------- */
+.status {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  max-width: 620px;
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.status__dot {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--fg-dim);
+}
+
+.status[data-state='ok'] .status__dot {
+  background: var(--success);
+  animation: status-pulse 2.4s var(--ease-standard) infinite;
+}
+
+.status[data-state='down'] .status__dot {
+  background: var(--danger);
+}
+
+/* One soft ring per beat: a status light that blinks hard reads as an alert, not as a heartbeat. */
+@keyframes status-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.status__title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.status__meta {
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status[data-state='ok'] .status__dot {
+    animation: none;
   }
 }

@@ -1,5 +1,6 @@
 ---
 import '../styles/site.css';
+import '../styles/motion.css';
 import latest from '../data/latest.json';
 
 interface Props {
@@ -76,6 +77,17 @@ const year = new Date().getFullYear();
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="SLAG" />
     <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>
+      // `.js` gates every hidden-by-default state in motion.css, so it is set only when scripting
+      // actually runs. The watchdog covers the case where the bundle never arrives: content must
+      // never stay invisible because one file 404'd.
+      document.documentElement.classList.add('js');
+      setTimeout(function () {
+        if (document.documentElement.dataset.reveal !== 'ready') {
+          document.documentElement.classList.remove('js');
+        }
+      }, 2500);
+    </script>
   </head>
   <body>
     <header class="site-header" data-header>
@@ -129,21 +141,47 @@ const year = new Date().getFullYear();
           <nav class="site-footer__legal">
             {legalLinks.map((link) => <a href={link.href}>{link.label}</a>)}
           </nav>
-          <a href="/health">статус сервера</a>
+          <a href="/status">статус сервера</a>
         </div>
       </div>
     </footer>
 
     <script>
+      import '../scripts/reveal';
+
       // The fade under the header belongs to the state "content is under the bar", not to the
       // header itself: without a scroll listener it would be a permanent hairline again.
-      const header = document.querySelector<HTMLElement>('[data-header]');
-      if (header) {
+      const header = document.querySelector<HTMLElement>('[data-header]');      if (header) {
         const sync = () => {
           header.dataset.scrolled = window.scrollY > 8 ? 'true' : 'false';
         };
         sync();
         window.addEventListener('scroll', sync, { passive: true });
+      }
+
+      // Scrollspy: on the landing the two in-page nav entries say which section you are in.
+      // The band in the middle of the viewport decides, so neither entry lights up while the
+      // previous section is still half on screen.
+      const spyLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('.site-nav a[href^="/#"]'));
+      if (spyLinks.length > 0 && window.location.pathname === '/') {
+        const targets = new Map<string, HTMLAnchorElement>();
+        for (const link of spyLinks) {
+          const id = (link.getAttribute('href') ?? '').slice(2);
+          if (id) targets.set(id, link);
+        }
+        const spy = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              const link = targets.get(entry.target.id);
+              if (link) link.toggleAttribute('data-active', entry.isIntersecting);
+            }
+          },
+          { rootMargin: '-45% 0px -45% 0px' },
+        );
+        for (const id of targets.keys()) {
+          const section = document.getElementById(id);
+          if (section) spy.observe(section);
+        }
       }
     </script>
   </body>

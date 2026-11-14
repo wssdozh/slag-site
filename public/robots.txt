@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# The site is public; nothing here is behind auth, so there is nothing to hide.
+# Documentation, releases and legal pages are all reachable from the landing.
+Disallow: /api/

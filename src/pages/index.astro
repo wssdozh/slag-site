@@ -39,7 +39,7 @@ const features = [
     title: 'Markdown на диске',
     body: 'Каждая запись — .md с YAML frontmatter. Папка, корзина и вложения — файлы, которые видно в проводнике.',
     shot: '/shots/folder.png',
-    zoom: '1.9',
+    zoom: '1.25',
     x: '18%',
     y: '42%',
   },
@@ -47,7 +47,7 @@ const features = [
     title: 'Поток как в мессенджере',
     body: 'Одно поле ввода, Enter отправляет. Тип записи выбирается в нём же: заметка, задача или статья.',
     shot: '/shots/editor.png',
-    zoom: '1.7',
+    zoom: '1.2',
     x: '50%',
     y: '12%',
   },
@@ -55,21 +55,21 @@ const features = [
     title: 'Поиск по всему хранилищу',
     body: 'Orama BM25 с опечатками ищет по заголовкам, тексту, тегам и папкам. Вызов — Ctrl+K.',
     shot: '/shots/search.png',
-    zoom: '2',
+    zoom: '1.3',
     x: '48%',
     y: '40%',
-  },
-  {
-    title: 'Аудио и вложения рядом',
-    body: 'Войсы, картинки и файлы лежат в .attachments/ и открываются из карточки — без облака посередине.',
   },
   {
     title: 'ИИ-разбор входящих',
     body: 'Входящие разбираются по папкам с их описаниями. Своим ключом Gemini или через подписку — на выбор.',
     shot: '/shots/triage.png',
-    zoom: '2.2',
+    zoom: '1.45',
     x: '50%',
     y: '46%',
+  },
+  {
+    title: 'Аудио и вложения рядом',
+    body: 'Войсы, картинки и файлы лежат в .attachments/ и открываются из карточки — без облака посередине.',
   },
   {
     title: 'MCP для своих агентов',
@@ -155,7 +155,7 @@ const faq = [
 
     <h1>
       Заметки со скоростью чата.<br />
-      <span>Файлы остаются твоими.</span>
+      Файлы остаются твоими.
     </h1>
 
     <p class="hero__lead">
@@ -167,7 +167,7 @@ const faq = [
       <a class="btn btn--primary" href={downloads.windows ?? '/releases'} data-download="windows">
         Скачать для Windows
       </a>
-      <a class="btn btn--ghost" href="/releases">Все платформы и версии</a>
+      <a class="hero__alt" href="/releases">все платформы и версии →</a>
     </div>
 
     <p class="hero__note">портативная сборка · работает офлайн</p>
@@ -194,7 +194,7 @@ const faq = [
     </p>
 
     <div class="grid grid--3 grid--features">
-      {features.map((feature) => (
+      {features.map((feature, featureIndex) => (
         <article class="card">
           {feature.shot && (
             <span class="card__visual" aria-hidden="true">
@@ -208,7 +208,9 @@ const faq = [
               />
             </span>
           )}
-          <h3><span class="card__icon">—</span>{feature.title}</h3>
+          <h3>
+            <span class="card__icon">{String(featureIndex + 1).padStart(2, '0')}</span>{feature.title}
+          </h3>
           <p>{feature.body}</p>
         </article>
       ))}

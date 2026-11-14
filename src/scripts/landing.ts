@@ -27,10 +27,10 @@ const originals = Array.from(document.querySelectorAll<HTMLButtonElement>('[data
 );
 const calm = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-// Carousel without arrows: the rail is dragged, swiped, or moves on its own when nobody is
-// touching it. Wrapping past the last slide needs a second copy of the slides in the DOM —
-// when the first clone settles exactly where the first slide was, the rail jumps back one
-// cycle without animation, so the pictures appear to loop forever.
+// A permanently moving strip. No arrows, no snapping, no step timer: the rail drifts at a
+// constant speed, wraps through a cloned copy of its slides, and yields to a pointer without
+// pulling anywhere. Reduced motion stops it dead — an endless loop is exactly what that setting
+// is asking to be spared from.
 if (track && count && originals.length > 1) {
   const total = Array.from(track.querySelectorAll<HTMLButtonElement>('[data-shot]')).length;
   const originSlides = Array.from(track.querySelectorAll<HTMLElement>('.shot'));
@@ -45,8 +45,9 @@ if (track && count && originals.length > 1) {
   const slides = Array.from(track.querySelectorAll<HTMLElement>('.shot'));
   const leftOf = (slide: HTMLElement) => slide.offsetLeft - track.offsetLeft;
 
-  // Slides differ in width (the phone one is narrow), so there is no single stride: the
-  // current slide is whichever one starts closest to the left edge.
+  const cycleWidth = () =>
+    (slides[total] ? leftOf(slides[total]!) : 0) - (slides[0] ? leftOf(slides[0]!) : 0);
+
   const nearest = () => {
     let best = 0;
     let bestDelta = Number.POSITIVE_INFINITY;
@@ -61,11 +62,16 @@ if (track && count && originals.length > 1) {
   };
 
   const paint = () => {
-    const index = nearest() % total;
-    count.textContent = pad(index + 1);
-    progress?.style.setProperty('transform', `scaleX(${(index + 1) / total})`);
+    count.textContent = pad((nearest() % total) + 1);
+    const cycle = cycleWidth();
+    // The bar follows the whole loop, not the slide: the strip never stops, so a bar that jumps
+    // in thirds would read as three separate moves instead of one continuous one.
+    const fraction = cycle > 0 ? (((track.scrollLeft % cycle) + cycle) % cycle) / cycle : 0;
+    progress?.style.setProperty('transform', `scaleX(${fraction.toFixed(4)})`);
   };
 
+  // A jump with no animation: at the seam the clone and the original are the same pixels, so
+  // moving the scroll offset by one cycle is invisible.
   const jumpTo = (left: number) => {
     const previous = track.style.scrollBehavior;
     track.style.scrollBehavior = 'auto';
@@ -79,35 +85,26 @@ if (track && count && originals.length > 1) {
     track.scrollTo({ left: leftOf(slide), behavior: 'smooth' });
   };
 
-  const settle = () => {
-    const cycle = (slides[total] ? leftOf(slides[total]!) : 0) - (slides[0] ? leftOf(slides[0]!) : 0);
-    if (cycle > 0 && track.scrollLeft >= cycle - 2) {
-      jumpTo(track.scrollLeft - cycle);
-      paint();
-    }
-  };
-
-  let pressX = 0;
-  let startLeft = 0;
-  let idleTimer = 0;
-
+  let frame = 0;
   track.addEventListener(
     'scroll',
     () => {
-      paint();
-      window.clearTimeout(idleTimer);
-      idleTimer = window.setTimeout(() => {
-        if (!dragging) settle();
-      }, 180);
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        paint();
+      });
     },
     { passive: true },
   );
 
   // Mouse drag. Touch needs no code: the browser scrolls the rail natively, with momentum.
-  // Capture starts only after the pointer actually moves: capturing on pointerdown retargets
-  // the following click to the rail, and a click on a picture would stop opening the lightbox.
+  // Capture starts only after the pointer actually moves, because capturing on pointerdown
+  // retargets the click that follows and a picture would stop opening the lightbox.
   let pressing = false;
   let dragging = false;
+  let pressX = 0;
+  let startLeft = 0;
   let pointerId = -1;
 
   track.addEventListener('pointerdown', (event) => {
@@ -125,10 +122,7 @@ if (track && count && originals.length > 1) {
       if (Math.abs(dx) < 6) return;
       dragging = true;
       track.setPointerCapture(event.pointerId);
-      track.style.scrollSnapType = 'none';
-      track.style.scrollBehavior = 'auto';
       track.classList.add('is-dragging');
-      stop();
     }
     track.scrollLeft = startLeft - dx;
   });
@@ -137,69 +131,69 @@ if (track && count && originals.length > 1) {
     pressing = false;
     if (!dragging) return;
     dragging = false;
-    track.style.scrollSnapType = '';
-    track.style.scrollBehavior = '';
     track.classList.remove('is-dragging');
     if (event && track.hasPointerCapture(event.pointerId)) {
       track.releasePointerCapture(event.pointerId);
     }
-    goTo(nearest());
-    start();
+    // No snap back: the strip carries on from wherever the hand left it.
   };
 
   track.addEventListener('pointerup', endDrag);
   track.addEventListener('pointercancel', endDrag);
 
+  // Keyboard still steps one slide, and the drift holds for a moment so the two do not fight.
+  let holdUntil = 0;
   track.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowRight') {
-      event.preventDefault();
-      goTo(nearest() + 1);
-    } else if (event.key === 'ArrowLeft') {
-      event.preventDefault();
-      goTo(nearest() - 1);
+    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+    event.preventDefault();
+    holdUntil = performance.now() + 900;
+    goTo(nearest() + (event.key === 'ArrowRight' ? 1 : -1));
+  });
+
+  // Drift. rAF stops on its own in a hidden tab, so nothing has to pause it there.
+  // The position is accumulated as a float and written out every frame: at 26px/s one frame
+  // moves less than a CSS pixel, and `scrollLeft += 0.4` rounds back to the same integer every
+  // time, so the strip would never leave the first slide.
+  const speed = 70; // px per second: a slide every eight seconds, slow enough to read
+  let position = track.scrollLeft;
+  let last = 0;
+  let wroteAt = 0;
+
+  const syncPosition = () => {
+    position = track.scrollLeft;
+  };
+
+  // A scroll we did not write (touch, wheel, keyboard) has to re-seed the accumulator.
+  track.addEventListener(
+    'scroll',
+    () => {
+      if (performance.now() - wroteAt > 120) syncPosition();
+    },
+    { passive: true },
+  );
+
+  const tick = (time: number) => {
+    requestAnimationFrame(tick);
+    const dt = last ? Math.min((time - last) / 1000, 0.064) : 0;
+    last = time;
+    if (dragging || calm.matches || performance.now() < holdUntil) return;
+    if (document.querySelector('[data-lightbox]')?.hasAttribute('open')) return;
+
+    position += speed * dt;
+    const cycle = cycleWidth();
+    if (cycle > 0 && position >= cycle) {
+      position -= cycle;
+      jumpTo(position);
     }
-  });
+    wroteAt = performance.now();
+    track.scrollLeft = position;
+  };
 
-  // Autoplay stops for a pointer, for focus inside the rail, for a hidden tab and for the
-  // lightbox; reduced motion turns it off for good.
-  let timer = 0;
-  let paused = false;
+  track.addEventListener('pointerdown', syncPosition);
+  track.addEventListener('pointerup', syncPosition);
 
-  function stop() {
-    if (timer) {
-      window.clearInterval(timer);
-      timer = 0;
-    }
-  }
-
-  function start() {
-    if (calm.matches || timer) return;
-    timer = window.setInterval(() => {
-      if (paused || dragging) return;
-      if (document.querySelector('[data-lightbox]')?.hasAttribute('open')) return;
-      goTo(nearest() + 1);
-    }, 4200);
-  }
-
-  track.addEventListener('pointerenter', () => {
-    paused = true;
-  });
-  track.addEventListener('pointerleave', () => {
-    paused = false;
-  });
-  track.addEventListener('focusin', () => {
-    paused = true;
-  });
-  track.addEventListener('focusout', () => {
-    paused = false;
-  });
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) stop();
-    else start();
-  });
-
+  requestAnimationFrame(tick);
   paint();
-  start();
 }
 
 // Lightbox: a native <dialog> does the modal work (focus trap, Esc, backdrop, top layer), so

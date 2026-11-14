@@ -96,18 +96,20 @@ const facts = [
 ];
 
 // The rail is landscape only: a phone screenshot at a legible size is taller than a 16/10 slide
-// can ever be, so it gets its own column instead of being shrunk into the rail.
+// can ever be, so it gets its own column instead of being shrunk into the rail. The phone and the
+// feed come from the app repository's README, which keeps them at 2× and current.
 const shots = [
+  { src: '/shots/feed.png', caption: 'лента задач', width: 1440, height: 900, phone: false },
   { src: '/shots/search.png', caption: 'поиск по хранилищу', width: 1280, height: 800, phone: false },
   { src: '/shots/triage.png', caption: 'разбор входящих', width: 1280, height: 800, phone: false },
   { src: '/shots/folder.png', caption: 'папка: описание для ИИ и медиа', width: 1280, height: 800, phone: false },
 ];
 
 const phoneShot = {
-  src: '/shots/mobile.png',
+  src: '/shots/phone.png',
   caption: 'телефон: задачи',
-  width: 390,
-  height: 844,
+  width: 860,
+  height: 1864,
   index: shots.length,
 };
 
@@ -231,7 +233,7 @@ const faq = [
 
   <section class="wrap section" id="screens">
     <span class="section__label">как выглядит</span>
-    <h2>Поиск, папка, разбор, телефон</h2>
+    <h2>Лента, поиск, разбор, папка</h2>
 
     <div class="gallery">
       <div class="carousel" data-carousel>

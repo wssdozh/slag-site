@@ -581,16 +581,18 @@ p {
   background: var(--accent);
   transform: scaleX(0);
   transform-origin: left center;
-  transition: transform var(--dur-reveal) var(--ease-standard);
+  /* No transition: the bar is repainted on every frame of the drift, and a 320ms ease on top of
+     that turns smooth motion into a lagging smear. */
 }
 
+/* No snap points: the strip drifts and is dragged, and it must stop exactly where the hand let
+   go. `scroll-behavior` stays `auto` — the drift writes scrollLeft every frame, and a smooth
+   behaviour on the container would turn each of those writes into its own little animation. */
 .carousel__track {
   display: flex;
   align-items: start;
   gap: 14px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
   cursor: grab;
@@ -601,8 +603,6 @@ p {
 
 .carousel__track.is-dragging {
   cursor: grabbing;
-  scroll-snap-type: none;
-  scroll-behavior: auto;
 }
 
 .carousel__track::-webkit-scrollbar {
@@ -615,8 +615,6 @@ p {
   flex-direction: column;
   width: min(620px, 92%);
   margin: 0;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
 }
 
 @media (max-width: 719px) {

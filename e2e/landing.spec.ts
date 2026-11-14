@@ -34,41 +34,56 @@ test('sections become visible as they are scrolled into view', async ({ page }) 
   await expect(last).toHaveCSS('opacity', '1');
 });
 
-test('carousel advances by itself and stops under the pointer', async ({ page }) => {
+test('carousel drifts on its own and does not pull back after a drag', async ({ page }) => {
   await page.goto('/');
-  const counter = page.locator('[data-carousel-count]');
   const rail = page.locator('[data-carousel-track]');
   await rail.scrollIntoViewIfNeeded();
 
-  await expect(counter).toHaveText('01');
-  await expect(counter).toHaveText('02', { timeout: 8000 });
+  const leftOf = () => rail.evaluate((el) => el.scrollLeft);
+  const start = await leftOf();
+  await page.waitForTimeout(1200);
+  expect(await leftOf()).toBeGreaterThan(start + 5);
 
-  await rail.hover();
-  const paused = await counter.textContent();
-  await page.waitForTimeout(5200);
-  await expect(counter).toHaveText(paused ?? '02');
+  // A drag must leave the strip where the hand let go: no magnetic snap back to a slide edge.
+  const box = await rail.boundingBox();
+  if (!box) throw new Error('the rail has no box');
+  await page.mouse.move(box.x + 400, box.y + 150);
+  await page.mouse.down();
+  for (let step = 1; step <= 6; step += 1) {
+    await page.mouse.move(box.x + 400 - step * 40, box.y + 150);
+  }
+  await page.mouse.up();
+
+  const released = await leftOf();
+  await page.waitForTimeout(500);
+  expect(await leftOf()).toBeGreaterThanOrEqual(released - 1);
 });
 
 test('a screenshot opens full size and Escape closes it', async ({ page }) => {
   await page.goto('/');
-  await page.locator('#screens').scrollIntoViewIfNeeded();
-  await page.locator('[data-shot]').first().click();
+  // The phone, not a slide: the rail never stops moving, so a slide is never "stable" enough
+  // for a locator click.
+  await page.locator('.phone__open').scrollIntoViewIfNeeded();
+  await page.locator('.phone__open').click();
 
   const box = page.locator('[data-lightbox]');
   await expect(box).toHaveAttribute('open', '');
-  await expect(page.locator('[data-counter]')).toHaveText('01 / 04');
+  await expect(box.locator('[data-counter]')).toHaveText('05 / 05');
+  await expect(box.locator('[data-caption]')).toHaveText('телефон: задачи');
 
   await page.keyboard.press('Escape');
   await expect(box).not.toHaveAttribute('open', '');
 });
 
-test('reduced motion shows everything at once and keeps the carousel still', async ({ page }) => {
+test('reduced motion shows everything at once and keeps the rail still', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
 
-  const counter = page.locator('[data-carousel-count]');
   await expect(page.locator('#community .card').last()).toHaveCSS('opacity', '1');
-  const first = await counter.textContent();
-  await page.waitForTimeout(5200);
-  await expect(counter).toHaveText(first ?? '01');
+
+  const rail = page.locator('[data-carousel-track]');
+  await rail.scrollIntoViewIfNeeded();
+  const start = await rail.evaluate((el) => el.scrollLeft);
+  await page.waitForTimeout(2000);
+  expect(await rail.evaluate((el) => el.scrollLeft)).toBe(start);
 });

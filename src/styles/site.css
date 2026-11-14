@@ -382,12 +382,57 @@ p {
 }
 
 /* ---------- gallery ---------- */
-/* Landscape shots are 1280×800, so a 16/10 frame crops nothing. The card sits on the app's own
-   canvas colour, so the picture blends into the frame instead of being letterboxed. */
-.gallery {
+/* A carousel, not a mosaic: four screenshots at a readable size beat four thumbnails, and the
+   same four still work on a phone. Native scrolling with snap points brings the momentum for
+   free; the arrows exist for pointers, and the counter is the only chrome that has to be read. */
+.carousel {
+  margin-top: 22px;
+}
+
+.carousel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.carousel__count {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+}
+
+.carousel__nav {
+  display: flex;
+  gap: 8px;
+}
+
+.carousel__track {
   display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(680px, 76%);
   gap: 14px;
-  margin-top: 26px;
+  align-items: start;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  /* Room for the focus ring, which would otherwise be clipped by the scroll box. */
+  padding: 3px;
+  margin: -3px;
+}
+
+.carousel__track::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 719px) {
+  .carousel__track {
+    grid-auto-columns: 87%;
+  }
 }
 
 .shot {
@@ -398,6 +443,8 @@ p {
   border-radius: var(--radius);
   background: var(--canvas);
   overflow: hidden;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
   transition: border-color 140ms var(--ease-standard);
 }
 
@@ -417,27 +464,34 @@ p {
   flex: 1 1 auto;
 }
 
+/* `contain`, so a 1280×800 shot sits edge to edge in a 16/10 frame and the phone is a phone
+   instead of a cropped slice of one. */
 .shot__open img {
   width: 100%;
   aspect-ratio: 16 / 10;
-  object-fit: cover;
-  object-position: center top;
+  object-fit: contain;
 }
 
-/* Portrait shot: a device on a surface, not a slice of a phone screen glued to the card edge. */
-.shot--tall .shot__open {
-  display: grid;
-  place-items: center;
-  padding: 16px;
+.shot--phone .shot__open {
+  /* Same frame as a landscape shot, so the rail has one height and nothing letterboxes. */
+  aspect-ratio: 16 / 10;
   background: radial-gradient(120% 90% at 50% 0%, rgba(59, 130, 246, 0.1), transparent 65%),
     var(--canvas-subtle);
 }
 
-.shot--tall img {
-  width: min(240px, 58%);
+.shot--phone img {
+  /* Absolute again: a percentage height inside an aspect-ratio box is not resolved by every
+     engine, and the phone ends up as tall as its own screenshot. */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: auto;
   height: auto;
-  object-fit: contain;
-  border-radius: 14px;
+  max-width: calc(100% - 32px);
+  max-height: calc(100% - 32px);
+  aspect-ratio: auto;
+  border-radius: 10px;
   border: 1px solid var(--border-strong);
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
 }
@@ -485,40 +539,6 @@ p {
 
 .shot__index {
   color: var(--fg-dim);
-}
-
-@media (min-width: 720px) {
-  .gallery {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .shot--lead {
-    grid-column: 1 / -1;
-  }
-  .shot--lead .shot__open img {
-    aspect-ratio: 16 / 9;
-  }
-  /* The phone is the only portrait shot: it owns a tall cell and the two landscape ones stack
-     beside it. Both sides of the row end at the same height, so the mosaic closes flush.
-     The picture is placed absolutely on purpose: a percentage height inside the cell resolves
-     against an indefinite box and the image ends up wider than its own card. */
-  .shot--tall {
-    grid-row: span 2;
-  }
-  .shot--tall .shot__open {
-    aspect-ratio: 3 / 4;
-    padding: 0;
-  }
-  .shot--tall img {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    translate: -50% -50%;
-    width: auto;
-    height: auto;
-    max-width: calc(100% - 36px);
-    max-height: calc(100% - 36px);
-    aspect-ratio: auto;
-  }
 }
 
 /* ---------- lightbox ---------- */
@@ -611,6 +631,14 @@ p {
   background: rgba(255, 255, 255, 0.07);
   border-color: var(--border-hover);
   color: var(--fg);
+}
+
+.iconbtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  background: rgba(255, 255, 255, 0.02);
+  border-color: var(--border);
+  color: var(--fg-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {

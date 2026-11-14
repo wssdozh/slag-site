@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import latest from '../data/latest.json';
 import plansData from '../data/plans.json';
+import releasesData from '../data/releases.json';
 
 const version = latest?.version ?? '';
 const downloads: Record<string, string> = latest?.downloads ?? {};
@@ -60,6 +61,24 @@ const shots = [
   { src: '/shots/mobile.png', caption: 'телефон: задачи', width: 390, height: 844, shape: 'shot--tall' },
   { src: '/shots/folder.png', caption: 'папка: описание для ИИ и медиа', width: 1280, height: 800, shape: '' },
 ];
+
+// The changelog is the release notes the app itself shows, shortened to their first line:
+// a landing that never changes looks abandoned next to these.
+const updates = (Array.isArray(releasesData) ? releasesData : [])
+  .slice(0, 3)
+  .map((release: { version: string; date: string; url: string; notes?: string }) => ({
+    version: release.version,
+    date: release.date,
+    url: release.url,
+    note: (release.notes ?? '').split('\n')[0],
+  }))
+  .filter((release) => release.note);
+
+const day = (iso: string) => {
+  if (!iso) return '';
+  const [year, month, date] = iso.split('-');
+  return date ? `${date}.${month}.${year}` : iso;
+};
 
 const faq = [
   {
@@ -130,6 +149,14 @@ const faq = [
         </article>
       ))}
     </div>
+
+    <p class="docs-links">
+      подробнее:
+      <a href="/docs/install">установка</a>
+      <a href="/docs/vault">хранилище</a>
+      <a href="/docs/sync">синхронизация</a>
+      <a href="/docs/mcp">MCP</a>
+    </p>
   </section>
 
   <section class="wrap section" id="screens">
@@ -233,6 +260,25 @@ const faq = [
     </div>
   </section>
 
+  <section class="wrap section" id="changelog">
+    <span class="section__label">что нового</span>
+    <h2>Что менялось в сборках</h2>
+
+    <div class="changelog">
+      {updates.map((update) => (
+        <a class="changelog__row" href={update.url} rel="noreferrer">
+          <span class="changelog__version">{update.version}</span>
+          <span class="changelog__date">{day(update.date)}</span>
+          <span class="changelog__note">{update.note}</span>
+        </a>
+      ))}
+    </div>
+
+    <p class="docs-links">
+      <a href="/releases">все релизы и заметки</a>
+    </p>
+  </section>
+
   <section class="wrap section" id="pricing">
     <span class="section__label">тарифы</span>
     <h2>Сколько стоит синхронизация</h2>
@@ -290,6 +336,40 @@ const faq = [
           <p>{item.a}</p>
         </details>
       ))}
+    </div>
+  </section>
+
+  <section class="wrap cta" id="start">
+    <h2>Поставь и запиши первую мысль</h2>
+    <p class="cta__note">0 ₽ · без аккаунта · работает офлайн</p>
+    <div class="cta__actions">
+      <a class="btn btn--primary" href={downloads.windows ?? '/releases'} data-download="windows">
+        Скачать для Windows
+      </a>
+      <a class="btn btn--ghost" href="/releases">Все платформы и версии</a>
+    </div>
+  </section>
+
+  <section class="wrap section" id="community">
+    <span class="section__label">куда писать</span>
+    <h2>Документация, Telegram, GitHub</h2>
+
+    <div class="grid grid--3">
+      <article class="card">
+        <h3><span class="card__icon">doc</span> Документация</h3>
+        <p>Установка, формат хранилища, синхронизация и MCP-сервер — без видео на двадцать минут.</p>
+        <a class="card__link" href="/docs">Открыть документацию →</a>
+      </article>
+      <article class="card">
+        <h3><span class="card__icon">tg</span> Telegram</h3>
+        <p>Анонсы сборок и заметки о разработке. Без рассылок и «полезных подборок».</p>
+        <a class="card__link" href="https://t.me/slag_notes" rel="noreferrer">t.me/slag_notes →</a>
+      </article>
+      <article class="card">
+        <h3><span class="card__icon">git</span> GitHub</h3>
+        <p>Исходники, баги и предложения. Приложение и релей открыты целиком.</p>
+        <a class="card__link" href="https://github.com/wssdozh/slag-v2/issues" rel="noreferrer">Завести issue →</a>
+      </article>
     </div>
   </section>
 

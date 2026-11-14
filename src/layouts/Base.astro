@@ -21,6 +21,43 @@ const nav = [
   { href: '/support', label: 'Поддержка' },
 ];
 
+const footerNav = [
+  {
+    title: 'продукт',
+    links: [
+      { href: '/#features', label: 'Возможности' },
+      { href: '/#pricing', label: 'Тарифы' },
+      { href: '/#download', label: 'Скачать' },
+      { href: '/releases', label: 'Релизы' },
+    ],
+  },
+  {
+    title: 'документация',
+    links: [
+      { href: '/docs', label: 'Обзор' },
+      { href: '/docs/install', label: 'Установка' },
+      { href: '/docs/vault', label: 'Хранилище' },
+      { href: '/docs/sync', label: 'Синхронизация' },
+      { href: '/docs/mcp', label: 'MCP-сервер' },
+    ],
+  },
+  {
+    title: 'сообщество',
+    links: [
+      { href: 'https://github.com/wssdozh/slag-v2', label: 'GitHub' },
+      { href: 'https://github.com/wssdozh/slag-v2/issues', label: 'Issues' },
+      { href: 'https://t.me/slag_notes', label: 'Telegram' },
+      { href: '/support', label: 'Поддержка' },
+    ],
+  },
+];
+
+const legalLinks = [
+  { href: '/privacy', label: 'Политика конфиденциальности' },
+  { href: '/terms', label: 'Соглашение' },
+  { href: '/consent', label: 'Согласие на обработку данных' },
+];
+
 const version = latest?.version ?? null;
 const year = new Date().getFullYear();
 ---
@@ -41,7 +78,7 @@ const year = new Date().getFullYear();
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
-    <header class="site-header">
+    <header class="site-header" data-header>
       <div class="wrap site-header__row">
         <a class="brand" href="/">
           <img src="/icon.png" alt="" width="24" height="24" />
@@ -65,17 +102,50 @@ const year = new Date().getFullYear();
     </main>
 
     <footer class="site-footer">
-      <div class="wrap site-footer__row">
-        <span>SLAG · локальные заметки в markdown</span>
-        <nav>
-          <a href="/privacy">Политика конфиденциальности</a>
-          <a href="/terms">Соглашение</a>
-          <a href="/consent">Согласие на обработку данных</a>
-          <a href="/support">Поддержка</a>
-          <a href="https://github.com/wssdozh/slag-v2" rel="noreferrer">GitHub</a>
-        </nav>
-        <span class="mono">© {year}</span>
+      <div class="wrap">
+        <div class="site-footer__grid">
+          <div class="site-footer__mark">
+            <a class="brand" href="/">
+              <img src="/icon.png" alt="" width="24" height="24" />
+              <span>SLAG</span>
+            </a>
+            <span>Заметки и задачи в markdown на своём диске.</span>
+            {version && <span class="mono">версия {version}</span>}
+          </div>
+
+          {footerNav.map((column) => (
+            <nav class="site-footer__col" aria-label={column.title}>
+              <span class="site-footer__title">{column.title}</span>
+              {column.links.map((link) => (
+                <a href={link.href} rel={link.href.startsWith('http') ? 'noreferrer' : undefined}>
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+          ))}
+        </div>
+
+        <div class="site-footer__bottom">
+          <span>© {year} SLAG</span>
+          <nav class="site-footer__legal">
+            {legalLinks.map((link) => <a href={link.href}>{link.label}</a>)}
+          </nav>
+          <a href="/health">статус сервера</a>
+        </div>
       </div>
     </footer>
+
+    <script>
+      // The fade under the header belongs to the state "content is under the bar", not to the
+      // header itself: without a scroll listener it would be a permanent hairline again.
+      const header = document.querySelector<HTMLElement>('[data-header]');
+      if (header) {
+        const sync = () => {
+          header.dataset.scrolled = window.scrollY > 8 ? 'true' : 'false';
+        };
+        sync();
+        window.addEventListener('scroll', sync, { passive: true });
+      }
+    </script>
   </body>
 </html>

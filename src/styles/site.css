@@ -497,56 +497,11 @@ p {
 }
 
 /* ---------- gallery ---------- */
-/* The rail is landscape only, and the phone stands beside it in its own column: a phone shot at
-   a legible size is taller than any 16/10 slide, so it either crops, shrinks to a thumbnail, or
-   gets a column of its own. It gets a column. */
-.gallery {
-  display: grid;
-  gap: 24px;
-  margin-top: 22px;
-}
-
-@media (min-width: 900px) {
-  .gallery {
-    grid-template-columns: minmax(0, 1fr) 250px;
-    align-items: start;
-  }
-}
-
-.phone {
-  margin: 0;
-}
-
-.phone__open {
-  display: block;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: zoom-in;
-}
-
-.phone__open img {
-  width: 100%;
-  height: auto;
-  border-radius: 16px;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-@media (max-width: 899px) {
-  .phone {
-    width: 240px;
-    margin: 0 auto;
-  }
-}
-
-/* ---------- carousel ---------- */
-/* Native scrolling with snap points brings the momentum for free: the rail is dragged, swiped,
-   and moves on its own when nobody is touching it. */
+/* One strip, and the phone is the last slide in it. A phone screenshot is taller than a 16/10
+   shot, so the slides are centred against it instead of all being forced to one height — the
+   alternative was cropping it, shrinking it, or parking it in a column of its own. */
 .carousel {
-  margin-top: 0;
+  margin-top: 22px;
 }
 
 .carousel__head {
@@ -590,7 +545,7 @@ p {
    behaviour on the container would turn each of those writes into its own little animation. */
 .carousel__track {
   display: flex;
-  align-items: start;
+  align-items: center;
   gap: 14px;
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -617,21 +572,15 @@ p {
   margin: 0;
 }
 
+/* The phone: a narrow column, its own proportions, nothing cut. It sets the height of the strip,
+   and that is fine — it is a phone. */
+.shot--phone {
+  width: min(260px, 38%);
+}
+
 @media (max-width: 719px) {
   .shot {
     width: 88%;
-  }
-}
-
-/* The phone is the one portrait shot: a narrow column, full height, no crop. It is the tallest
-   thing in the rail, and that is fine — it is a phone. */
-.shot--phone {
-  width: min(320px, 40%);
-}
-
-@media (max-width: 719px) {
-  .shot {
-    width: 87%;
   }
   .shot--phone {
     width: 62%;

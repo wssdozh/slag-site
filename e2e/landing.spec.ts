@@ -60,11 +60,14 @@ test('carousel drifts on its own and does not pull back after a drag', async ({ 
 });
 
 test('a screenshot opens full size and Escape closes it', async ({ page }) => {
+  // The strip never stops on its own, so reduced motion is what makes a slide a stable target
+  // for a locator click. Everything below is the lightbox, not the rail.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
-  // The phone, not a slide: the rail never stops moving, so a slide is never "stable" enough
-  // for a locator click.
-  await page.locator('.phone__open').scrollIntoViewIfNeeded();
-  await page.locator('.phone__open').click();
+
+  const phone = page.locator('[data-shot][data-index="4"]').first();
+  await phone.scrollIntoViewIfNeeded();
+  await phone.click();
 
   const box = page.locator('[data-lightbox]');
   await expect(box).toHaveAttribute('open', '');

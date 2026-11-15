@@ -175,9 +175,27 @@ const faq = [
     <p class="hero__note">портативная сборка · работает офлайн</p>
 
     <div class="hero__shot">
-      {/* On a phone the desktop window is 340px wide and unreadable, so the hero shows the phone
-          build instead: same product, the shape it actually has in that hand. */}
-      <picture>
+      {/* A still screenshot of a notes app is a picture of a tool. Ten seconds of the real thing —
+          typing, Enter, the card landing in the feed, a checkbox — is the product working, and it
+          costs 110 KB. */}
+      <video
+        class="hero__video"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        width="1200"
+        height="750"
+        poster="/shots/hero-poster.webp"
+        aria-label="SLAG: мысль набрана, Enter, карточка появилась в ленте"
+      >
+        <source src="/media/feed-demo.webm" type="video/webm" />
+        <source src="/media/feed-demo.mp4" type="video/mp4" />
+      </video>
+
+      {/* Reduced motion, a slow link or a phone: the same screen as a still. */}
+      <picture class="hero__still">
         <source media="(max-width: 639px)" srcset="/shots/phone.webp" width="820" height="1623" />
         <img src="/shots/feed.webp" alt="Экран SLAG: лента задач, папки и композер" width="1760" height="1147" />
       </picture>

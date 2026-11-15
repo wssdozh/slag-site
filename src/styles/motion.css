@@ -95,4 +95,7 @@
   .plan:hover {
     translate: none;
   }
+  .hero__badge .dot {
+    animation: none;
+  }
 }

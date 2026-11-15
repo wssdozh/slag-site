@@ -90,3 +90,25 @@ test('reduced motion shows everything at once and keeps the rail still', async (
   await page.waitForTimeout(2000);
   expect(await rail.evaluate((el) => el.scrollLeft)).toBe(start);
 });
+
+// The clip is the only thing on the page that moves by itself, so the contract is explicit:
+// no motion setting means the still, and the clip is not even downloaded.
+test('reduced motion swaps the hero clip for the still picture', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+
+  await expect(page.locator('.hero__video')).toBeHidden();
+  await expect(page.locator('.hero__still img')).toBeVisible();
+});
+
+test('the hero clip plays by itself, muted and on a loop', async ({ page }) => {
+  await page.goto('/');
+
+  const video = page.locator('.hero__video');
+  await expect(video).toBeVisible();
+  await expect(video).toHaveAttribute('muted', '');
+  await expect(video).toHaveAttribute('loop', '');
+  await expect
+    .poll(async () => video.evaluate((el: HTMLVideoElement) => el.currentTime), { timeout: 8000 })
+    .toBeGreaterThan(0);
+});

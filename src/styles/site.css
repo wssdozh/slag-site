@@ -319,6 +319,24 @@ p {
   background: var(--success);
 }
 
+/* The one thing in the first screen that breathes: a release pill whose dot is alive reads as
+   "this is maintained", and three seconds is slow enough not to pull the eye off the headline. */
+.hero__badge .dot {
+  animation: dot-breathe 3.4s var(--ease-standard) infinite;
+}
+
+@keyframes dot-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+    scale: 0.82;
+  }
+  50% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
 .hero h1 {
   /* Display leading: both reference sites set their headline at ~1.0 line-height, which is what
      makes a two-line claim read as one object. 1.05 leaves room for Cyrillic descenders. */
@@ -400,6 +418,34 @@ p {
 
 .hero__shot img {
   width: 100%;
+}
+
+/* The clip is raw app pixels, so the window itself is drawn here: same radius, hairline and
+   shadow the still screenshots carry baked in. */
+.hero__video {
+  display: block;
+  width: 100%;
+  border-radius: 14px;
+  outline: 1px solid rgba(255, 255, 255, 0.09);
+  outline-offset: -1px;
+  background: var(--canvas-subtle);
+  box-shadow:
+    0 40px 80px -40px rgba(0, 0, 0, 0.9),
+    0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+.hero__still {
+  display: none;
+}
+
+/* A phone cannot read a 1200px desktop window, and reduced motion means the still by contract. */
+@media (max-width: 639px), (prefers-reduced-motion: reduce) {
+  .hero__video {
+    display: none;
+  }
+  .hero__still {
+    display: block;
+  }
 }
 
 /* The phone shot is portrait: at full column width it would be two screens tall, so it is

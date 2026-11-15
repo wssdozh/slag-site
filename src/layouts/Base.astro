@@ -1,6 +1,7 @@
 ---
 import '../styles/site.css';
 import '../styles/motion.css';
+import '../styles/blocks.css';
 import latest from '../data/latest.json';
 
 interface Props {
@@ -28,7 +29,7 @@ const footerNav = [
     links: [
       { href: '/#features', label: 'Возможности' },
       { href: '/#pricing', label: 'Тарифы' },
-      { href: '/#download', label: 'Скачать' },
+      { href: '/releases', label: 'Все платформы' },
       { href: '/releases', label: 'Релизы' },
     ],
   },
@@ -60,6 +61,9 @@ const legalLinks = [
 ];
 
 const version = latest?.version ?? null;
+// The header button downloads, it does not tour the site: with the download section gone from
+// the landing, a link to /releases would cost a click before the file starts.
+const downloadUrl = (latest as { downloads?: Record<string, string> })?.downloads?.windows ?? '/releases';
 const year = new Date().getFullYear();
 ---
 
@@ -104,7 +108,7 @@ const year = new Date().getFullYear();
           <a href="https://github.com/wssdozh/slag-v2" rel="noreferrer">GitHub</a>
         </nav>
 
-        <a class="btn btn--primary btn--small" href="/#download">Скачать</a>
+        <a class="btn btn--primary btn--small" href={downloadUrl} data-download="windows">Скачать</a>
       </div>
     </header>
 

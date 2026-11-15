@@ -17,7 +17,7 @@ test('landing renders every section and logs nothing', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.locator('h1')).toBeVisible();
-  for (const id of ['features', 'screens', 'data', 'download', 'changelog', 'pricing', 'faq', 'start', 'community']) {
+  for (const id of ['features', 'screens', 'pricing', 'faq', 'start']) {
     await expect(page.locator(`#${id}`)).toHaveCount(1);
   }
 
@@ -28,7 +28,7 @@ test('landing renders every section and logs nothing', async ({ page }) => {
 
 test('sections become visible as they are scrolled into view', async ({ page }) => {
   await page.goto('/');
-  const last = page.locator('#community .card').last();
+  const last = page.locator('#faq details').last();
   await expect(last).toHaveCSS('opacity', '0');
   await last.scrollIntoViewIfNeeded();
   await expect(last).toHaveCSS('opacity', '1');
@@ -82,7 +82,7 @@ test('reduced motion shows everything at once and keeps the rail still', async (
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
 
-  await expect(page.locator('#community .card').last()).toHaveCSS('opacity', '1');
+  await expect(page.locator('#faq details').last()).toHaveCSS('opacity', '1');
 
   const rail = page.locator('[data-carousel-track]');
   await rail.scrollIntoViewIfNeeded();

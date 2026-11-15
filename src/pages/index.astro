@@ -1,8 +1,21 @@
 ---
 import Base from '../layouts/Base.astro';
+import ComposerArt from '../components/illustrations/Composer.astro';
+import SearchArt from '../components/illustrations/Search.astro';
+import FilesArt from '../components/illustrations/Files.astro';
+import SyncArt from '../components/illustrations/Sync.astro';
 import latest from '../data/latest.json';
 import plansData from '../data/plans.json';
 import releasesData from '../data/releases.json';
+
+// Feature tiles take an illustration by name; the map keeps the data list plain and lets Astro
+// render the component it points at.
+const art = {
+  composer: ComposerArt,
+  search: SearchArt,
+  files: FilesArt,
+  sync: SyncArt,
+};
 
 const version = latest?.version ?? '';
 const downloads: Record<string, string> = latest?.downloads ?? {};
@@ -38,38 +51,26 @@ const features = [
   {
     title: 'Markdown на диске',
     body: 'Каждая запись — .md с YAML frontmatter. Папка, корзина и вложения — файлы, которые видно в проводнике.',
-    shot: '/shots/folder.webp',
-    zoom: '1.15',
-    x: '18%',
-    y: '45%',
+    art: 'files',
   },
   {
     title: 'Поток как в мессенджере',
     body: 'Одно поле ввода, Enter отправляет. Тип записи выбирается в нём же: заметка, задача или статья.',
-    shot: '/shots/editor.webp',
-    zoom: '1.15',
-    x: '50%',
-    y: '26%',
+    art: 'composer',
   },
   {
     title: 'Поиск по всему хранилищу',
     body: 'Orama BM25 с опечатками ищет по заголовкам, тексту, тегам и папкам. Вызов — Ctrl+K.',
-    shot: '/shots/search.webp',
-    zoom: '1.2',
-    x: '45%',
-    y: '45%',
+    art: 'search',
+  },
+  {
+    title: 'Одна заметка на двух устройствах',
+    body: 'Изменения ходят через свой релей: телефон и ноут сходятся без аккаунта и без облака посередине.',
+    art: 'sync',
   },
   {
     title: 'ИИ-разбор входящих',
     body: 'Входящие разбираются по папкам с их описаниями. Своим ключом Gemini или через подписку — на выбор.',
-    shot: '/shots/feed.webp',
-    zoom: '1.6',
-    x: '62%',
-    y: '12%',
-  },
-  {
-    title: 'Аудио и вложения рядом',
-    body: 'Войсы, картинки и файлы лежат в .attachments/ и открываются из карточки — без облака посередине.',
   },
   {
     title: 'MCP для своих агентов',
@@ -172,7 +173,11 @@ const faq = [
       <a class="hero__alt" href="/releases">все платформы и версии →</a>
     </div>
 
-    <p class="hero__note">портативная сборка · работает офлайн</p>
+    <p class="hero__note">
+      {megabytes(sizes.windows) ? `windows ${megabytes(sizes.windows)} · ` : ''}
+      {megabytes(sizes.android) ? `android ${megabytes(sizes.android)} · ` : ''}
+      портативная сборка · офлайн
+    </p>
 
     <div class="hero__shot">
       {/* A still screenshot of a notes app is a picture of a tool. Ten seconds of the real thing —
@@ -219,26 +224,22 @@ const faq = [
     </p>
 
     <div class="grid grid--3 grid--features">
-      {features.map((feature, featureIndex) => (
-        <article class="card">
-          {feature.shot && (
-            <span class="card__visual" aria-hidden="true">
-              <img
-                class="card__shot"
-                src={feature.shot}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                style={`--zoom:${feature.zoom};--x:${feature.x};--y:${feature.y}`}
-              />
-            </span>
-          )}
-          <h3>
-            <span class="card__icon">{String(featureIndex + 1).padStart(2, '0')}</span>{feature.title}
-          </h3>
-          <p>{feature.body}</p>
-        </article>
-      ))}
+      {features.map((feature, featureIndex) => {
+        const Art = feature.art ? art[feature.art as keyof typeof art] : null;
+        return (
+          <article class="card">
+            {Art && (
+              <div class="card__art">
+                <Art />
+              </div>
+            )}
+            <h3>
+              <span class="card__icon">{String(featureIndex + 1).padStart(2, '0')}</span>{feature.title}
+            </h3>
+            <p>{feature.body}</p>
+          </article>
+        );
+      })}
     </div>
 
     <p class="docs-links">
@@ -306,92 +307,6 @@ const faq = [
           <span data-carousel-progress></span>
         </div>
     </div>
-  </section>
-
-  <section class="wrap section" id="data">
-    <span class="section__label">где мои данные</span>
-    <h2>Хранилище — папка на диске</h2>
-
-    <div class="grid grid--3">
-      <article class="card">
-        <h3><span class="card__icon">1</span> Папку выбираешь сам</h3>
-        <p>
-          Приложение не прячет заметки в свою базу. Сломался компьютер — открыл ту же папку на
-          другом, всё на месте.
-        </p>
-      </article>
-      <article class="card">
-        <h3><span class="card__icon">2</span> Релей не читает</h3>
-        <p>
-          Пакеты изменений шифруются на устройстве. Сервер видит размер и адресата, а содержимое
-          удаляет сразу после подтверждения доставки.
-        </p>
-      </article>
-      <article class="card">
-        <h3><span class="card__icon">3</span> Свой релей</h3>
-        <p>
-          Синхронизация не обязана быть нашей: релей открыт, ставится на домашний сервер и работает
-          с тем же приложением.
-        </p>
-      </article>
-    </div>
-  </section>
-
-  <section class="wrap section" id="download">
-    <span class="section__label">скачать</span>
-    <h2>Сборка {version}</h2>
-    <p class="section__lead">
-      Windows и Android обновляются изнутри приложения. Linux — пакетным менеджером.
-    </p>
-
-    <div class="grid grid--3">
-      <article class="card">
-        <h3><span class="card__icon">win</span> Windows 10/11</h3>
-        <p>.exe, x64. Портативная сборка и установщик в одном релизе.</p>
-        {sizes.windows && <p class="lead-mono" style="margin-top:8px">{megabytes(sizes.windows)}</p>}
-        <p style="margin-top:14px">
-          <a class="btn btn--primary btn--small" href={downloads.windows ?? '/releases'} data-download="windows">
-            Скачать .exe
-          </a>
-        </p>
-      </article>
-      <article class="card">
-        <h3><span class="card__icon">apk</span> Android</h3>
-        <p>Установка из apk, обновления — тоже apk, поверх старой версии.</p>
-        {sizes.android && <p class="lead-mono" style="margin-top:8px">{megabytes(sizes.android)}</p>}
-        <p style="margin-top:14px">
-          <a class="btn btn--ghost btn--small" href={downloads.android ?? '/releases'} data-download="android">
-            Скачать apk
-          </a>
-        </p>
-      </article>
-      <article class="card">
-        <h3><span class="card__icon">nix</span> Linux</h3>
-        <p>Бинарник принадлежит пакетному менеджеру, приложение его не подменяет.</p>
-        <p style="margin-top:14px">
-          <a class="btn btn--ghost btn--small" href="/releases">Страница релиза</a>
-        </p>
-      </article>
-    </div>
-  </section>
-
-  <section class="wrap section" id="changelog">
-    <span class="section__label">что нового</span>
-    <h2>Что менялось в сборках</h2>
-
-    <div class="changelog">
-      {updates.map((update) => (
-        <a class="changelog__row" href={update.url} rel="noreferrer">
-          <span class="changelog__version">{update.version}</span>
-          <span class="changelog__date">{day(update.date)}</span>
-          <span class="changelog__note">{update.note}</span>
-        </a>
-      ))}
-    </div>
-
-    <p class="docs-links">
-      <a href="/releases">все релизы и заметки</a>
-    </p>
   </section>
 
   <section class="wrap section" id="pricing">
@@ -472,29 +387,11 @@ const faq = [
       </a>
       <a class="btn btn--ghost" href="/releases">Все платформы и версии</a>
     </div>
-  </section>
-
-  <section class="wrap section" id="community">
-    <span class="section__label">куда писать</span>
-    <h2>Документация, Telegram, GitHub</h2>
-
-    <div class="grid grid--3">
-      <article class="card">
-        <h3><span class="card__icon">doc</span> Документация</h3>
-        <p>Установка, формат хранилища, синхронизация и MCP-сервер — без видео на двадцать минут.</p>
-        <a class="card__link" href="/docs">Открыть документацию →</a>
-      </article>
-      <article class="card">
-        <h3><span class="card__icon">tg</span> Telegram</h3>
-        <p>Анонсы сборок и заметки о разработке. Без рассылок и «полезных подборок».</p>
-        <a class="card__link" href="https://t.me/slag_notes" rel="noreferrer">t.me/slag_notes →</a>
-      </article>
-      <article class="card">
-        <h3><span class="card__icon">git</span> GitHub</h3>
-        <p>Исходники, баги и предложения. Приложение и релей открыты целиком.</p>
-        <a class="card__link" href="https://github.com/wssdozh/slag-v2/issues" rel="noreferrer">Завести issue →</a>
-      </article>
-    </div>
+    {updates.length > 0 && (
+      <p class="cta__meta">
+        последний релиз {version} · {day(updates[0].date)} · <a href="/releases">что нового</a>
+      </p>
+    )}
   </section>
 
   <dialog class="lightbox" data-lightbox aria-label="Скриншоты SLAG">

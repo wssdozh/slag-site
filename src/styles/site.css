@@ -606,34 +606,6 @@ p {
   color: var(--fg);
 }
 
-/* A real fragment of the app inside the card that claims it: the crop is the argument, so the
-   picture is zoomed into the part that proves the sentence, not scaled down to a thumbnail. */
-.card__visual {
-  position: relative;
-  display: block;
-  overflow: hidden;
-  aspect-ratio: 16 / 9;
-  margin-bottom: 16px;
-  border: 0;
-  border-radius: 10px;
-  background: var(--canvas-subtle);
-}
-
-.card__shot {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scale(var(--zoom, 1.6));
-  transform-origin: var(--x, 50%) var(--y, 50%);
-  transition: transform 240ms var(--ease-standard);
-}
-
-.card:hover .card__shot {
-  transform: scale(calc(var(--zoom, 1.6) * 1.04));
-}
-
 /* ---------- gallery ---------- */
 /* One strip, and the phone is the last slide in it. A phone screenshot is taller than a 16/10
    shot, so the slides are centred against it instead of all being forced to one height — the
@@ -1222,12 +1194,6 @@ p {
 }
 
 /* ---------- misc ---------- */
-.lead-mono {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--fg-muted);
-}
-
 .legal {
   max-width: 760px;
   padding: 44px 0 72px;
@@ -1456,45 +1422,6 @@ select:focus-visible {
   border-color: var(--accent);
 }
 
-/* One release per row: version and date in mono, the note as a normal sentence, the whole
-   row clickable to the release. */
-.changelog {
-  margin-top: 24px;
-  border-top: 1px solid var(--border);
-}
-
-.changelog__row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 16px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-  transition: color 120ms var(--ease-standard);
-}
-
-.changelog__version {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--fg);
-}
-
-.changelog__date {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--fg-dim);
-}
-
-.changelog__note {
-  flex: 1 1 320px;
-  font-size: 13px;
-  color: var(--fg-secondary);
-}
-
-.changelog__row:hover .changelog__version {
-  color: var(--accent);
-}
-
 /* Closing band. Both reference sites end on one; a page that just stops at the FAQ asks the
    reader to scroll back up to act. */
 .cta {
@@ -1533,6 +1460,24 @@ select:focus-visible {
   gap: 10px;
   justify-content: center;
   margin-top: 24px;
+}
+
+.cta__meta {
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+.cta__meta a {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+}
+
+.cta__meta a:hover {
+  color: var(--fg);
+  text-decoration-color: currentColor;
 }
 
 .card__link {

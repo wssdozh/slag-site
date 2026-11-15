@@ -1,0 +1,583 @@
+/* Assembled illustrations for the landing: window fragments stacked on top of each other, the way
+   Notion and Linear do it. Everything is markup and CSS — no pictures, no video — so the blocks
+   stay sharp at any density, weigh nothing, and can be edited without re-recording anything.
+   Every block stops moving under `prefers-reduced-motion` and shows its finished state instead. */
+
+.ill {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.04), transparent 60%),
+    linear-gradient(180deg, var(--canvas-subtle), var(--canvas-deep));
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--fg-secondary);
+  isolation: isolate;
+}
+
+.ill__panel {
+  position: absolute;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--canvas-subtle);
+  box-shadow:
+    0 18px 40px -22px rgba(0, 0, 0, 0.9),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.ill__mono {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--fg-dim);
+}
+
+.ill__title {
+  font-size: 11px;
+  color: var(--fg);
+}
+
+.ill__chip {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--fg-muted);
+  background: var(--surface);
+}
+
+.ill__row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 22px;
+  padding: 0 8px;
+}
+
+.ill__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--fg-dim);
+  flex: none;
+}
+
+.ill__tick {
+  display: grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+  border: 1px solid var(--border-strong);
+  color: var(--canvas-deep);
+  font-size: 9px;
+  flex: none;
+}
+
+.ill__tick::before {
+  content: '✓';
+}
+
+/* ---------- 1. composer ---------- */
+
+.ill--composer .ill__card {
+  left: 7%;
+  right: 15%;
+  top: 11%;
+  padding: 11px 12px;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  transform: translateY(14px);
+  opacity: 0;
+  animation: ill-card-in 8s var(--ease-entrance) infinite;
+}
+
+/* A second card behind the first: one lone window floats, two read as a feed. */
+.ill--composer .ill__ghost {
+  left: 15%;
+  right: 7%;
+  top: 43%;
+  height: 62px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  opacity: 0.55;
+}
+
+.ill--composer .ill__card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ill--composer .ill__tick {
+  margin-left: auto;
+  opacity: 0;
+  animation: ill-tick-in 8s var(--ease-entrance) infinite;
+}
+
+.ill--composer .ill__input {
+  left: 7%;
+  right: 7%;
+  bottom: 10%;
+  height: 46px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ill__query {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  color: var(--fg);
+}
+
+/* The text is revealed by a clip, so nothing reflows: the layout is already the final one. */
+.ill--composer .ill__query span {
+  display: inline-block;
+  animation: ill-type 8s steps(36, end) infinite;
+}
+
+.ill--composer .ill__caret {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--accent);
+  animation:
+    ill-caret-run 8s steps(36, end) infinite,
+    ill-caret-blink 1s steps(1, end) infinite;
+}
+
+.ill--composer .ill__tag {
+  right: 5%;
+  top: 79%;
+  translate: 30% 0;
+  animation: ill-tag-in 8s var(--ease-entrance) infinite;
+}
+
+/* ---------- 2. search ---------- */
+
+.ill--search .ill__palette {
+  left: 7%;
+  right: -6%;
+  top: 11%;
+  padding: 10px 0 6px;
+}
+
+.ill--search .ill__field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 10px 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--fg);
+}
+
+.ill--search .ill__hits {
+  position: relative;
+  display: grid;
+}
+
+.ill--search .ill__hit {
+  position: relative;
+  display: grid;
+  gap: 1px;
+  padding: 6px 10px 6px 14px;
+  animation: ill-hit-fade 8s var(--ease-standard) infinite;
+}
+
+.ill--search .ill__hit:nth-child(2) {
+  animation-delay: 240ms;
+}
+
+.ill--search .ill__hit:nth-child(3) {
+  animation-delay: 480ms;
+}
+
+.ill--search .ill__hit:nth-child(4) {
+  animation-delay: 720ms;
+}
+
+/* The hit the query is actually about stays, the other two fall away: filter, not vanish. */
+.ill--search .ill__hit:first-child {
+  animation: none;
+  opacity: 1;
+}
+
+.ill--search .ill__hit::before {
+  content: '';
+  position: absolute;
+  inset: 4px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  opacity: 0;
+  animation: ill-hit-active 8s var(--ease-standard) infinite;
+}
+
+.ill--search .ill__hit b {
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.ill--search .ill__foot {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 10px 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- 3. files ---------- */
+
+.ill--files .ill__path {
+  position: absolute;
+  left: 7%;
+  top: 24%;
+  letter-spacing: 0.06em;
+}
+
+.ill--files .ill__tree {
+  left: 7%;
+  top: 33%;
+  width: 47%;
+  padding: 6px 0;
+}
+
+.ill--files .ill__tree .ill__row {
+  position: relative;
+  padding-left: 26px;
+}
+
+.ill--files .ill__tree .ill__row::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  width: 6px;
+  height: 8px;
+  border: 1px solid var(--fg-dim);
+  border-radius: 1px;
+}
+
+.ill--files .ill__cursor {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  animation: ill-cursor-walk 8s steps(1, end) infinite;
+}
+
+.ill--files .ill__meta {
+  right: 4%;
+  top: 42%;
+  width: 56%;
+  padding: 10px 12px;
+  display: grid;
+  gap: 7px;
+  translate: 6% 0;
+}
+
+.ill--files .ill__meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ill--files .ill__meta-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.ill--files .ill__badge {
+  position: absolute;
+  left: 8%;
+  top: 8%;
+  height: 18px;
+  padding: 0 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--fg-secondary);
+  font-family: var(--mono);
+  font-size: 9px;
+}
+
+/* ---------- 4. sync ---------- */
+
+.ill--sync .ill__phone {
+  left: 7%;
+  top: 12%;
+  bottom: 12%;
+  width: 28%;
+  padding: 7px 6px;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  border-radius: 12px;
+}
+
+.ill--sync .ill__phone .ill__row {
+  height: 14px;
+  padding: 0 4px;
+  font-size: 8px;
+}
+
+.ill--sync .ill__phone .ill__tick,
+.ill--sync .ill__desk .ill__tick {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.ill--sync .ill__phone .ill__tick {
+  opacity: 0;
+  animation: ill-tick-phone 8s var(--ease-entrance) infinite;
+}
+
+.ill--sync .ill__desk {
+  right: 2%;
+  top: 30%;
+  width: 58%;
+  padding: 11px 13px;
+  display: grid;
+  gap: 6px;
+}
+
+.ill--sync .ill__desk .ill__tick {
+  margin-left: auto;
+  opacity: 0;
+  animation: ill-tick-desk 8s var(--ease-entrance) infinite;
+}
+
+/* The wire between the two devices: dashed, quiet, and it lights up on the beat. */
+.ill--sync .ill__wire {
+  position: absolute;
+  left: 35%;
+  top: 42%;
+  width: 14%;
+  height: 1px;
+  border-top: 1px dashed var(--border-strong);
+  animation: ill-wire 8s var(--ease-standard) infinite;
+}
+
+/* A feature tile holds the illustration above its title; the block draws its own border, so the
+   wrap only owns the rhythm. */
+.card__art {
+  margin-bottom: 18px;
+}
+
+.card__art .ill {
+  width: 100%;
+}
+
+@keyframes ill-type {
+  0%,
+  6% {
+    clip-path: inset(0 100% 0 0);
+  }
+  46%,
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes ill-caret-run {
+  0%,
+  6% {
+    left: 0;
+  }
+  46%,
+  100% {
+    left: 62%;
+  }
+}
+
+@keyframes ill-caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes ill-card-in {
+  0%,
+  46% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  56%,
+  92% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ill-tick-in {
+  0%,
+  62% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70%,
+  92% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes ill-tag-in {
+  0%,
+  58% {
+    opacity: 0;
+  }
+  70%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes ill-hit-fade {
+  0%,
+  30% {
+    opacity: 1;
+  }
+  44%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes ill-hit-active {
+  0%,
+  30% {
+    opacity: 0;
+  }
+  44%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes ill-cursor-walk {
+  0%,
+  24% {
+    top: 8px;
+  }
+  26%,
+  50% {
+    top: 30px;
+  }
+  52%,
+  76% {
+    top: 52px;
+  }
+  78%,
+  100% {
+    top: 30px;
+  }
+}
+
+@keyframes ill-tick-phone {
+  0%,
+  14% {
+    opacity: 0;
+  }
+  22%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes ill-tick-desk {
+  0%,
+  26% {
+    opacity: 0;
+  }
+  34%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes ill-wire {
+  0%,
+  20% {
+    opacity: 0.25;
+  }
+  30%,
+  70% {
+    opacity: 1;
+  }
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ill *,
+  .ill *::before {
+    animation: none;
+  }
+
+  /* Finished state: the action happened, the block is not frozen mid-gesture. */
+  .ill--composer .ill__card,
+  .ill--composer .ill__tag {
+    opacity: 1;
+    transform: none;
+  }
+
+  .ill--composer .ill__tick,
+  .ill--sync .ill__tick {
+    opacity: 1;
+    transform: none;
+  }
+
+  .ill--search .ill__hit {
+    opacity: 0;
+  }
+
+  .ill--search .ill__hit:first-child {
+    opacity: 1;
+  }
+
+  .ill--search .ill__hit:first-child::before {
+    opacity: 1;
+  }
+}

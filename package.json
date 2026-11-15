@@ -9,7 +9,6 @@
     "build": "node scripts/fetch-data.mjs && astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "shots": "node scripts/sync-shots.mjs",
     "data": "node scripts/fetch-data.mjs",
     "test:e2e": "playwright test"
   },

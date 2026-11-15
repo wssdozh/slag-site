@@ -38,34 +38,34 @@ const features = [
   {
     title: 'Markdown на диске',
     body: 'Каждая запись — .md с YAML frontmatter. Папка, корзина и вложения — файлы, которые видно в проводнике.',
-    shot: '/shots/folder.png',
-    zoom: '1.25',
+    shot: '/shots/folder.webp',
+    zoom: '1.15',
     x: '18%',
-    y: '42%',
+    y: '45%',
   },
   {
     title: 'Поток как в мессенджере',
     body: 'Одно поле ввода, Enter отправляет. Тип записи выбирается в нём же: заметка, задача или статья.',
-    shot: '/shots/editor.png',
-    zoom: '1.2',
+    shot: '/shots/editor.webp',
+    zoom: '1.15',
     x: '50%',
-    y: '12%',
+    y: '26%',
   },
   {
     title: 'Поиск по всему хранилищу',
     body: 'Orama BM25 с опечатками ищет по заголовкам, тексту, тегам и папкам. Вызов — Ctrl+K.',
-    shot: '/shots/search.png',
-    zoom: '1.3',
-    x: '48%',
-    y: '40%',
+    shot: '/shots/search.webp',
+    zoom: '1.2',
+    x: '45%',
+    y: '45%',
   },
   {
     title: 'ИИ-разбор входящих',
     body: 'Входящие разбираются по папкам с их описаниями. Своим ключом Gemini или через подписку — на выбор.',
-    shot: '/shots/triage.png',
-    zoom: '1.45',
-    x: '50%',
-    y: '46%',
+    shot: '/shots/feed.webp',
+    zoom: '1.6',
+    x: '62%',
+    y: '12%',
   },
   {
     title: 'Аудио и вложения рядом',
@@ -98,11 +98,11 @@ const facts = [
 // The phone and the feed come from the app repository's README, which keeps them at 2× and
 // current. The phone is just another slide: taller than the rest, because a phone is.
 const shots = [
-  { src: '/shots/feed.png', caption: 'лента задач', width: 1440, height: 900, phone: false },
-  { src: '/shots/search.png', caption: 'поиск по хранилищу', width: 1280, height: 800, phone: false },
-  { src: '/shots/triage.png', caption: 'разбор входящих', width: 1280, height: 800, phone: false },
-  { src: '/shots/folder.png', caption: 'папка: описание для ИИ и медиа', width: 1280, height: 800, phone: false },
-  { src: '/shots/phone.png', caption: 'телефон: задачи', width: 860, height: 1864, phone: true },
+  { src: '/shots/feed.webp', caption: 'лента задач', width: 1760, height: 1147, phone: false },
+  { src: '/shots/editor.webp', caption: 'запись: статья в фокусе', width: 1760, height: 1147, phone: false },
+  { src: '/shots/search.webp', caption: 'поиск по хранилищу', width: 1760, height: 1147, phone: false },
+  { src: '/shots/folder.webp', caption: 'папка: описание для ИИ и медиа', width: 1760, height: 1147, phone: false },
+  { src: '/shots/phone.webp', caption: 'телефон: задачи', width: 820, height: 1623, phone: true },
 ];
 
 // The changelog is the release notes the app itself shows, shortened to their first line:
@@ -154,7 +154,9 @@ const faq = [
     </a>
 
     <h1>
-      Заметки со скоростью чата.<br />
+      {/* The trailing space matters: below 640px the <br> is hidden and the two claims join. */}
+      Заметки со скоростью чата.{' '}
+      <br />
       Файлы остаются твоими.
     </h1>
 
@@ -173,7 +175,12 @@ const faq = [
     <p class="hero__note">портативная сборка · работает офлайн</p>
 
     <div class="hero__shot">
-      <img src="/shots/editor.png" alt="Экран SLAG: редактор, теги, панель папки" width="1280" height="720" />
+      {/* On a phone the desktop window is 340px wide and unreadable, so the hero shows the phone
+          build instead: same product, the shape it actually has in that hand. */}
+      <picture>
+        <source media="(max-width: 639px)" srcset="/shots/phone.webp" width="820" height="1623" />
+        <img src="/shots/feed.webp" alt="Экран SLAG: лента задач, папки и композер" width="1760" height="1147" />
+      </picture>
     </div>
   </section>
 
@@ -479,7 +486,7 @@ const faq = [
         <span aria-hidden="true">✕</span>
       </button>
     </div>
-    <img class="lightbox__stage" data-stage src="/shots/search.png" alt="" width="1280" height="800" />
+    <img class="lightbox__stage" data-stage src="/shots/search.webp" alt="" width="1760" height="1147" />
     <div class="lightbox__foot">
       <button class="iconbtn" type="button" data-prev aria-label="Предыдущий скриншот">
         <span aria-hidden="true">←</span>

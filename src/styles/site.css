@@ -387,11 +387,8 @@ p {
 .hero__shot {
   width: 100%;
   margin-block: 48px 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  background: var(--canvas-subtle);
-  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.8);
+  /* The window frame and its shadow are baked into the picture, so the container stays a plain
+     box: border, radius and shadow here would draw a second window around the first. */
 }
 
 @media (min-width: 1240px) {
@@ -403,6 +400,17 @@ p {
 
 .hero__shot img {
   width: 100%;
+}
+
+/* The phone shot is portrait: at full column width it would be two screens tall, so it is
+   centred at its own width and capped by the viewport instead of being stretched. */
+@media (max-width: 639px) {
+  .hero__shot img {
+    width: auto;
+    max-width: 100%;
+    max-height: 58vh;
+    margin-inline: auto;
+  }
 }
 
 /* ---------- sections ---------- */
@@ -631,7 +639,7 @@ p {
   /* One height for every slide. It follows the landscape shot's 16:10 at the width the rail
      gives it, so nothing is letterboxed, and the phone — narrow by nature — ends up exactly as
      tall as the rest instead of standing head and shoulders above them. */
-  --slide-h: clamp(180px, 48.4vw, 388px);
+  --slide-h: clamp(190px, 46vw, 470px);
   display: flex;
   align-items: start;
   gap: 14px;
@@ -661,10 +669,10 @@ p {
   margin: 0;
 }
 
-/* The phone's column is exactly as wide as a phone at that height — 860 / 1864 is the shot's own
+/* The phone's column is exactly as wide as a phone at that height — 820 / 1623 is the shot's own
    ratio — so its slide has no empty margin around the device. */
 .shot--phone {
-  width: calc(var(--slide-h, 388px) * 0.4614);
+  width: calc(var(--slide-h, 470px) * 0.5052);
 }
 
 @media (max-width: 719px) {
@@ -674,7 +682,7 @@ p {
   /* Same rule as on desktop: the phone's width comes from the shared height, and a later
      `.shot` width would otherwise win over it. */
   .shot--phone {
-    width: calc(var(--slide-h, 388px) * 0.4614);
+    width: calc(var(--slide-h, 470px) * 0.5052);
   }
 }
 
@@ -695,9 +703,8 @@ p {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: 10px;
-  outline: 1px solid rgba(255, 255, 255, 0.06);
-  outline-offset: -1px;
+  /* No radius, no hairline: the picture is already a rendered window with its own corners and
+     shadow, and a CSS frame on top of it reads as a frame inside a frame. */
   /* The rail is dragged with the pointer; a native image drag would fight it. */
   user-select: none;
   -webkit-user-drag: none;
@@ -798,7 +805,9 @@ p {
   max-height: 72vh;
   margin: 0 auto;
   object-fit: contain;
-  background: var(--canvas);
+  /* Transparent, so the window's own shadow lands on the lightbox backdrop instead of on a
+     painted rectangle behind it. */
+  background: none;
 }
 
 .lightbox__foot {

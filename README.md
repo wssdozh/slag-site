@@ -17,7 +17,6 @@ npm run dev      # локальная разработка
 npm run check    # astro check
 npm run build    # тянет данные и собирает dist/
 npm run preview  # посмотреть собранное
-npm run shots    # обновить скриншоты из репозитория приложения
 npm run data     # только обновить данные (версия, релизы, тарифы)
 ```
 
@@ -30,7 +29,7 @@ npm run data     # только обновить данные (версия, р�
 | `src/data/latest.json` | манифест `latest.json` из последнего релиза | остаётся закоммиченный снапшот |
 | `src/data/releases.json` | GitHub releases API | остаётся снапшот |
 | `src/data/plans.json` | `GET /api/plans` на релее (`wssdozh/slag-relay`) | остаётся снапшот |
-| `public/shots/*` | `npm run shots` копирует из репозитория приложения | старые файлы не удаляются |
+| `public/shots/*.webp` | `scripts/landing-shots.mjs` в репозитории приложения, потом `scripts/landing-frames.sh` | файлы остаются как есть |
 
 Поэтому `npm run build` без сети не падает: предупреждение в лог и сборка на снапшоте.
 Для GitHub API полезно задать `GITHUB_TOKEN` — без него срабатывает лимит на IP и релизы

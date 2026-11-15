@@ -551,9 +551,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* `!important` on purpose: the animation declarations sit on deeper selectors than `.ill *`
+     (`.ill--sync .ill__desk .ill__tick` is 0,3,0), and a media query does not raise specificity.
+     Without it the switch silently does nothing, which is the one bug an accessibility setting
+     cannot afford. */
+  .ill,
   .ill *,
-  .ill *::before {
-    animation: none;
+  .ill *::before,
+  .ill *::after {
+    animation: none !important;
   }
 
   /* Finished state: the action happened, the block is not frozen mid-gesture. */
